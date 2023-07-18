@@ -21,15 +21,7 @@ const DashboardBar: React.FC = () => {
         color: theme.palette.primary.contrastText,
       })}
     >
-      <Container
-        maxWidth="xl"
-        sx={{
-          display: {
-            xs: "none",
-            md: "block",
-          },
-        }}
-      >
+      <Container maxWidth="xl">
         <Toolbar disableGutters variant="dense">
           <Box
             sx={{
@@ -57,6 +49,12 @@ const DashboardBar: React.FC = () => {
               spacing="1.25em"
               alignItems="center"
               fontWeight="bold"
+              sx={{
+                display: {
+                  xs: "none",
+                  md: "block",
+                },
+              }}
             >
               <Link
                 underline="none"

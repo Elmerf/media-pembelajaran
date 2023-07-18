@@ -63,8 +63,8 @@ const LoginComponent: React.FC = () => {
         >
           Masuk
         </Button>
-        <Grid container sx={{ mb: 1.5 }}>
-          <Grid item xs>
+        <Grid container sx={{ mb: 1.5 }} justifyContent={"space-between"}>
+          <Grid item>
             <Link component={RouterLink} to="/forgot-password" variant="body2">
               Lupa Password
             </Link>

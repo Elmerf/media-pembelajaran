@@ -36,31 +36,44 @@ const AppHero: React.FC = () => {
           display: "flex",
           flexDirection: "column",
           color: theme.palette.primary.contrastText,
-          width: "100%"
+          width: "100%",
         })}
         px="1.5em"
         textAlign="center"
       >
         <Typography
-          variant="h1"
+          variant={"h1"}
           sx={{
             fontWeight: "bold",
             background: `linear-gradient(135deg, ${theme.palette.primary.main} 15%, ${theme.palette.secondary.main} 90%)`,
             WebkitBackgroundClip: "text",
             WebkitTextFillColor: "transparent",
+            [theme.breakpoints.down("md")]: {
+              fontSize: "2.25em",
+            },
           }}
         >
           Media Pembelajaran
         </Typography>
-        <Typography variant="h3">Teknik Pengelolahan Audio Video</Typography>
-        <Typography variant="caption" pt={1}>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit.
+        <Typography
+          variant="h3"
+          sx={{
+            [theme.breakpoints.down("md")]: {
+              fontSize: "1.5em",
+            },
+          }}
+        >
+          Teknik Pengelolahan Audio Video
         </Typography>
-
         <Button
           size="large"
           variant="contained"
-          sx={{ width: "10em", mt: 1.5, textTransform: "capitalize", alignSelf: "center" }}
+          sx={{
+            width: "10em",
+            mt: 1.5,
+            textTransform: "capitalize",
+            alignSelf: "center",
+          }}
           onClick={() => {
             navigate("/login");
           }}

@@ -31,7 +31,7 @@ const AppNavigation: React.FC = () => {
           color: theme.palette.primary.contrastText,
         })}
       >
-        <Container
+        {/* <Container
           maxWidth="sm"
           sx={{
             display: {
@@ -126,16 +126,8 @@ const AppNavigation: React.FC = () => {
               </Typography>
             </Box>
           </Toolbar>
-        </Container>
-        <Container
-          maxWidth="xl"
-          sx={{
-            display: {
-              xs: "none",
-              md: "block",
-            },
-          }}
-        >
+        </Container> */}
+        <Container maxWidth="xl">
           <Toolbar disableGutters variant="dense">
             <Box
               sx={{
@@ -168,20 +160,6 @@ const AppNavigation: React.FC = () => {
                 alignItems="center"
                 fontWeight="bold"
               >
-                <Link
-                  underline="none"
-                  href="#home"
-                  color={(theme) => theme.palette.secondary.main}
-                >
-                  Home
-                </Link>
-                <Link
-                  underline="none"
-                  href="#tentang"
-                  color={(theme) => theme.palette.secondary.main}
-                >
-                  Tentang
-                </Link>
                 <Button
                   variant="contained"
                   size="small"

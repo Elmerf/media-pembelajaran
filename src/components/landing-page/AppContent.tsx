@@ -1,11 +1,20 @@
-import { Box, Container, Divider, Stack, Typography } from "@mui/material";
+import {
+  Box,
+  Container,
+  Divider,
+  Stack,
+  Typography,
+  useTheme,
+} from "@mui/material";
 import tentangIlustration from "../../assets/tentang-ilustration.jpg";
 import { Circle } from "@mui/icons-material";
 
 const AppContent: React.FC = () => {
+  const theme = useTheme();
+
   return (
     <Container maxWidth="xl" disableGutters>
-      <Box textAlign="center" p="2em" id="home">
+      {/* <Box textAlign="center" p="2em" id="home">
         <Typography variant="h4" fontWeight="bold" mb="0.5em">
           Home
         </Typography>
@@ -22,13 +31,21 @@ const AppContent: React.FC = () => {
           aperiam error possimus excepturi, nostrum a iste distinctio officia
           repudiandae minima saepe?
         </Typography>
-      </Box>
+      </Box> */}
       <Box id="tentang" p="2em">
-        <Stack direction="row" spacing={2}>
+        <Stack
+          direction={"column"}
+          spacing={2}
+          sx={{
+            [theme.breakpoints.up("md")]: {
+              flexDirection: "row",
+            },
+          }}
+        >
           <img
             src={tentangIlustration}
             alt="Illustration"
-            style={{ maxWidth: "50em" }}
+            style={{ width: "50em", maxWidth: "80vw", objectFit: "contain" }}
           />
           <Stack spacing={2}>
             <Typography

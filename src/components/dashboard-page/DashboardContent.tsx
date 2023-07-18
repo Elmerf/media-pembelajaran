@@ -15,7 +15,7 @@ const DashboardContent: React.FC = () => {
     <Box px={4}>
       <Container disableGutters maxWidth="lg">
         <Typography variant="body1" component="h6" py={1.5}>
-          Selamat Pagi, Admin
+          Selamat Pagi, <strong>Admin</strong>
         </Typography>
         <Box>
           <Stack
