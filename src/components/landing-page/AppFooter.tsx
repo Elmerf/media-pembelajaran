@@ -19,7 +19,7 @@ const AppFooter: React.FC = () => {
         gap="2px"
       >
         Copyright <Copyright fontSize="inherit" /> {new Date().getFullYear()},
-        @username
+        @Sarifal Kudsi
       </Typography>
     </Box>
   );
