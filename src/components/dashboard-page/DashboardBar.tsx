@@ -4,15 +4,27 @@ import {
   Box,
   Button,
   Container,
+  IconButton,
   Link,
+  Menu,
+  MenuItem,
   Stack,
   Toolbar,
   Typography,
 } from "@mui/material";
+import { Menu as MenuIcon } from "@mui/icons-material";
+import { useState } from "react";
 
 const DashboardBar: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const open = Boolean(anchorEl);
+
+  const handleClick: React.MouseEventHandler<HTMLButtonElement> = (event) =>
+    setAnchorEl(event.currentTarget);
+
+  const handleClose = () => setAnchorEl(null);
 
   return (
     <AppBar
@@ -42,7 +54,14 @@ const DashboardBar: React.FC = () => {
                 WebkitTextFillColor: "transparent",
               })}
             >
-              Media Belajar
+              <Link
+                underline="none"
+                color={(theme) => theme.palette.secondary.main}
+                component={RouteLink}
+                to={""}
+              >
+                Media Belajar
+              </Link>
             </Typography>
             <Stack
               direction="row"
@@ -60,6 +79,14 @@ const DashboardBar: React.FC = () => {
                 underline="none"
                 color={(theme) => theme.palette.secondary.main}
                 component={RouteLink}
+                to={"silabus"}
+              >
+                Silabus
+              </Link>
+              <Link
+                underline="none"
+                color={(theme) => theme.palette.secondary.main}
+                component={RouteLink}
                 to={"modules"}
               >
                 Modul
@@ -72,14 +99,6 @@ const DashboardBar: React.FC = () => {
               >
                 Assignment
               </Link>
-              <Link
-                underline="none"
-                color={(theme) => theme.palette.secondary.main}
-                component={RouteLink}
-                to={"silabus"}
-              >
-                Silabus
-              </Link>
               <Button
                 variant="contained"
                 size="small"
@@ -88,6 +107,70 @@ const DashboardBar: React.FC = () => {
               >
                 Logout
               </Button>
+            </Stack>
+            <Stack
+              direction="row"
+              spacing="1.25em"
+              alignItems="center"
+              fontWeight="bold"
+              sx={{
+                display: {
+                  xs: "block",
+                  md: "none",
+                },
+              }}
+            >
+              <IconButton
+                color="secondary"
+                aria-label="more"
+                id="long-button"
+                aria-controls={open ? "long-menu" : undefined}
+                aria-expanded={open ? "true" : undefined}
+                aria-haspopup="true"
+                onClick={handleClick}
+              >
+                <MenuIcon />
+              </IconButton>
+              <Menu
+                id="long-menu"
+                MenuListProps={{
+                  "aria-labelledby": "long-button",
+                }}
+                anchorEl={anchorEl}
+                open={open}
+                onClose={handleClose}
+              >
+                <MenuItem sx={{ minHeight: 36 }} onClick={handleClose}>
+                  <Link underline="none" component={RouteLink} to={"silabus"}>
+                    Silabus
+                  </Link>
+                </MenuItem>
+                <MenuItem sx={{ minHeight: 36 }} onClick={handleClose}>
+                  <Link underline="none" component={RouteLink} to={"modules"}>
+                    Modul
+                  </Link>
+                </MenuItem>
+                <MenuItem sx={{ minHeight: 36 }} onClick={handleClose}>
+                  <Link
+                    underline="none"
+                    component={RouteLink}
+                    to={"assignments"}
+                  >
+                    Assignment
+                  </Link>
+                </MenuItem>
+
+                <MenuItem sx={{ minHeight: 36, px: 1 }} disableGutters>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="small"
+                    onClick={() => navigate("/")}
+                  >
+                    Logout
+                  </Button>
+                </MenuItem>
+              </Menu>
             </Stack>
           </Box>
         </Toolbar>
