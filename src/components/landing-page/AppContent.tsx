@@ -32,7 +32,7 @@ const AppContent: React.FC = () => {
           repudiandae minima saepe?
         </Typography>
       </Box> */}
-      <Box id="tentang" p="2em">
+      <Box id="tentang" p="2em" pt={0}>
         <Stack
           direction={"column"}
           spacing={2}
@@ -47,7 +47,7 @@ const AppContent: React.FC = () => {
             alt="Illustration"
             style={{ width: "50em", maxWidth: "80vw", objectFit: "contain" }}
           />
-          <Stack spacing={2}>
+          <Stack spacing={2} justifyContent={"center"}>
             <Typography
               variant="h4"
               textAlign="center"
