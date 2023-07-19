@@ -14,6 +14,11 @@ import "@fontsource/pt-sans/700.css";
 import AuthLayout from "./layouts/AuthLayout";
 import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardContent from "./components/dashboard-page/DashboardContent";
+import ModuleList from "./components/dashboard-page/modules/ModuleList";
+import SilabusPage from "./components/dashboard-page/silabus/SilabusPage";
+import AssignmentList from "./components/dashboard-page/assignment/AssignmentList";
+import ModuleDetail from "./components/dashboard-page/modules/ModuleDetail";
+import AssignmentDetail from "./components/dashboard-page/assignment/AssignmentDetail";
 
 const theme = createTheme({
   palette: {
@@ -73,15 +78,23 @@ const router = createBrowserRouter([
       },
       {
         path: "modules",
-        element: <DashboardContent />,
+        element: <ModuleList />,
+      },
+      {
+        path: "module/:id",
+        element: <ModuleDetail />,
       },
       {
         path: "assignments",
-        element: <DashboardContent />,
+        element: <AssignmentList />,
+      },
+      {
+        path: "assignment/:id",
+        element: <AssignmentDetail />,
       },
       {
         path: "silabus",
-        element: <DashboardContent />,
+        element: <SilabusPage />,
       },
     ],
   },

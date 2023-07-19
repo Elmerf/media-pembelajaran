@@ -1,4 +1,4 @@
-import { Add } from "@mui/icons-material";
+import { Add, ReportProblem } from "@mui/icons-material";
 import {
   Box,
   Container,
@@ -7,17 +7,16 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import AssignmentCard from "./assignment/AssignmentCard";
-import ModuleCard from "./modules/ModuleCard";
+// import ModuleCard from "./ModuleCard";
 
-const DashboardContent: React.FC = () => {
+const ModuleList: React.FC = () => {
   return (
     <Box px={4}>
       <Container disableGutters maxWidth="lg">
-        <Typography variant="body1" component="h6" py={1.5}>
+        {/* <Typography variant="body1" component="h6" py={1.5}>
           Selamat Pagi, <strong>Admin</strong>
-        </Typography>
-        <Box>
+        </Typography> */}
+        {/* <Box>
           <Stack
             justifyContent="space-between"
             alignItems="center"
@@ -45,21 +44,21 @@ const DashboardContent: React.FC = () => {
               );
             })}
           </Grid>
-        </Box>
+        </Box> */}
         <Box>
           <Stack
             justifyContent="space-between"
             alignItems="center"
             direction="row"
           >
-            <Typography variant="h6" fontWeight="bold">
-              Modul Tersedia
+            <Typography variant="h6" fontWeight="bold" pt={1}>
+              Daftar Semua Modul
             </Typography>
             <IconButton size="small">
               <Add />
             </IconButton>
           </Stack>
-          <Grid
+          {/* <Grid
             container
             py={1}
             direction={{ xs: "column", md: "row" }}
@@ -73,18 +72,18 @@ const DashboardContent: React.FC = () => {
                 </Grid>
               );
             })}
-          </Grid>
+          </Grid> */}
           {/* EMPTY STATE */}
-          {/* <Stack justifyContent="center" alignItems="center" py={4}>
-          <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
-          <Typography textAlign="center" variant="body1">
-            Tidak ada Modul
-          </Typography>
-        </Stack> */}
+          <Stack justifyContent="center" alignItems="center" py={4}>
+            <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
+            <Typography textAlign="center" variant="body1">
+              Tidak ada Modul
+            </Typography>
+          </Stack>
         </Box>
       </Container>
     </Box>
   );
 };
 
-export default DashboardContent;
+export default ModuleList;

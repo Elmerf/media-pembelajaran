@@ -3,15 +3,17 @@ import {
   Card,
   CardContent,
   CardMedia,
+  Link,
   Stack,
   Typography,
 } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 import moduleImage from "../../../assets/module-image.jpg";
 
 const ModuleCard: React.FC = () => {
   return (
-    <Card variant="outlined" sx={{ minWidth: "18em" }}>
-      <CardMedia component="img" image={moduleImage} height={140} />
+    <Card variant="outlined" sx={{ boxShadow: 2 }}>
+      <CardMedia component="img" image={moduleImage} height={"172em"} />
       <CardContent>
         <Typography variant="body1" fontWeight="bold" pb={2}>
           Judul Modul
@@ -31,7 +33,15 @@ const ModuleCard: React.FC = () => {
             sx={{ width: "48%" }}
             color="secondary"
           >
-            Lihat Detail
+            <Link
+              component={RouterLink}
+              to={`/dashboard/module/${Math.floor(
+                100000 + Math.random() * 900000
+              )}`}
+              variant="body2"
+            >
+              Lihat Detail
+            </Link>
           </Button>
           {/* <Button variant="contained" size="small" sx={{ width: "48%" }}>
             Nilai
