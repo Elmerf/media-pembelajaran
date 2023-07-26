@@ -9,15 +9,39 @@ import {
 } from "@mui/material";
 import AssignmentCard from "./assignment/AssignmentCard";
 import ModuleCard from "./modules/ModuleCard";
+import { useContext, useEffect, useState } from "react";
+import { DashboardContext } from "../../layouts/DashboardLayout";
 
 const DashboardContent: React.FC = () => {
+  const {
+    session: { name, is_admin },
+  } = useContext(DashboardContext);
+
+  const greeting = () => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 3 && currentHour < 11) {
+      return "Selamat Pagi";
+    }
+
+    if (currentHour >= 11 && currentHour < 15) {
+      return "Selamat Siang";
+    }
+
+    if (currentHour >= 15 && currentHour < 20) {
+      return "Selamat Petang";
+    }
+
+    return "Selamat Malam";
+  };
+
   return (
-    <Box px={4}>
+    <Box px={4} py={2}>
       <Container disableGutters maxWidth="lg">
         <Typography variant="body1" component="h6" py={1.5}>
-          Selamat Pagi, <strong>Admin</strong>
+          {greeting()}, <strong>{name}</strong>
         </Typography>
-        <Box>
+        {/* <Box>
           <Stack
             justifyContent="space-between"
             alignItems="center"
@@ -26,9 +50,11 @@ const DashboardContent: React.FC = () => {
             <Typography variant="h6" fontWeight="bold">
               Assignment
             </Typography>
-            <IconButton size="small">
-              <Add />
-            </IconButton>
+            {is_admin ? (
+              <IconButton size="small">
+                <Add />
+              </IconButton>
+            ) : null}
           </Stack>
           <Grid
             container
@@ -45,7 +71,7 @@ const DashboardContent: React.FC = () => {
               );
             })}
           </Grid>
-        </Box>
+        </Box> */}
         <Box>
           <Stack
             justifyContent="space-between"
@@ -55,9 +81,11 @@ const DashboardContent: React.FC = () => {
             <Typography variant="h6" fontWeight="bold">
               Modul Tersedia
             </Typography>
-            <IconButton size="small">
-              <Add />
-            </IconButton>
+            {is_admin ? (
+              <IconButton size="small">
+                <Add />
+              </IconButton>
+            ) : null}
           </Stack>
           <Grid
             container

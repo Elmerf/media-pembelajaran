@@ -1,4 +1,4 @@
-import { Add, Edit, ReportProblem } from "@mui/icons-material";
+import { Add, Circle, Edit, ReportProblem } from "@mui/icons-material";
 import {
   Box,
   Container,
@@ -73,7 +73,9 @@ const ModuleDetail: React.FC = () => {
               </ListItem>
             </List>
           </Box>
-          <Divider />
+          <Divider role="presentation">
+            <Circle fontSize="inherit" color="primary" />
+          </Divider>
           <Box py={2}>
             <Typography variant="h6">Materi Pembelajaran</Typography>
             <Typography variant="body2">
@@ -104,7 +106,9 @@ const ModuleDetail: React.FC = () => {
               Maxime perferendis fugiat perspiciatis excepturi libero iure!l
             </Typography>
           </Box>
-          <Divider />
+          <Divider role="presentation">
+            <Circle fontSize="inherit" color="primary" />
+          </Divider>
           <Box py={2}>
             <Typography variant="h6">File Pendukung</Typography>
             <Stack justifyContent="center" alignItems="center" py={4}>
@@ -114,7 +118,9 @@ const ModuleDetail: React.FC = () => {
               </Typography>
             </Stack>
           </Box>
-          <Divider />
+          <Divider role="presentation">
+            <Circle fontSize="inherit" color="primary" />
+          </Divider>
           <Box py={2}>
             <Typography variant="h6" pb={1}>
               Assignment

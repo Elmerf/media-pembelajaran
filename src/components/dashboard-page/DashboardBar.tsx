@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
 import { useState } from "react";
+import Cookies from "js-cookie";
 
 const DashboardBar: React.FC = () => {
   const navigate = useNavigate();
@@ -25,6 +26,11 @@ const DashboardBar: React.FC = () => {
     setAnchorEl(event.currentTarget);
 
   const handleClose = () => setAnchorEl(null);
+
+  const handleLogout = () => {
+    Cookies.remove("current-session");
+    navigate("/");
+  };
 
   return (
     <AppBar
@@ -103,7 +109,7 @@ const DashboardBar: React.FC = () => {
                 variant="contained"
                 size="small"
                 sx={{ bgcolor: "white", color: "primary.main" }}
-                onClick={() => navigate("/")}
+                onClick={() => handleLogout()}
               >
                 Logout
               </Button>
@@ -165,7 +171,7 @@ const DashboardBar: React.FC = () => {
                     fullWidth
                     variant="contained"
                     size="small"
-                    onClick={() => navigate("/")}
+                    onClick={() => handleLogout()}
                   >
                     Logout
                   </Button>
