@@ -61,7 +61,7 @@ const DashboardContent: React.FC = () => {
         "*[_type == 'module'] | order(_updatedAt desc) [0...4]"
       );
       const dataAssignment = await client.fetch(
-        "*[_type == 'assignment'][0...5]"
+        "*[_type == 'assignment'] | order(_updatedAt desc) [0...4]"
       );
 
       setModules(dataModule);
