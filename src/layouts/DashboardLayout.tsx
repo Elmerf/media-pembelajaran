@@ -60,7 +60,7 @@ const DashboardLayout: React.FC = () => {
   }, [showLoader]);
 
   useEffect(() => {
-    deleteUnusedAssets();
+    // deleteUnusedAssets();
   }, []);
 
   return (

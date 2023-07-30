@@ -61,7 +61,7 @@ const DashboardContent: React.FC = () => {
         "*[_type == 'module'] | order(_updatedAt desc) [0...4]"
       );
       const dataAssignment = await client.fetch(
-        "*[_type == 'assignment'][0...5]"
+        "*[_type == 'assignment'] | order(_updatedAt desc) [0...4]"
       );
 
       setModules(dataModule);
@@ -180,11 +180,11 @@ const DashboardContent: React.FC = () => {
             <Typography variant="h6" fontWeight="bold">
               Assignment
             </Typography>
-            {is_admin ? (
+            {/* {is_admin ? (
               <IconButton size="small">
                 <Add />
               </IconButton>
-            ) : null}
+            ) : null} */}
           </Stack>
           {assignments.length > 0 && !isLoading ? (
             <Grid
@@ -195,8 +195,32 @@ const DashboardContent: React.FC = () => {
               columnSpacing={{ xs: 0, md: 2 }}
             >
               {assignments.map((assignment: any) => {
-                return <AssignmentCard />;
+                return (
+                  <Grid item xs={12} md={3} key={assignment._id}>
+                    <AssignmentCard
+                      id={assignment._id}
+                      coverImage={assignment.coverImage?.asset?._ref}
+                      title={assignment.title}
+                      description={assignment.description}
+                      deadline={assignment.deadline}
+                    />
+                  </Grid>
+                );
               })}
+              <Grid item xs={12}>
+                <Grid container justifyContent={"center"}>
+                  <Grid item xs={3}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      endIcon={<ArrowRight fontSize="large" />}
+                      onClick={() => navigate("/dashboard/assignments")}
+                    >
+                      Assignment Lainnya
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid>
             </Grid>
           ) : isLoading ? (
             <Grid

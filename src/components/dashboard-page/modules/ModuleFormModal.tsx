@@ -17,8 +17,11 @@ import { client } from "../../../lib/sanity-client";
 import { DashboardContext } from "../../../layouts/DashboardLayout";
 import fileNameEllipsis from "../../../helpers/filename-ellipsis";
 import formatBytes from "../../../helpers/format-bytes";
+import { converToImg } from "../../../lib/sanity-img";
 
 type ModuleFormModal = {
+  isEdit?: boolean;
+  dataToEdit?: any;
   open: boolean;
   onClose: () => void;
 };
@@ -94,7 +97,20 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
     }
   };
 
-  const handleNewModule = async () => {
+  const handleRemoveUploadedFile = async (assetId: string, index: number) => {
+    try {
+      await client
+        .patch(props.dataToEdit._id)
+        .unset([`fileMaterial[${index}]`])
+        .commit();
+
+      await client.delete(assetId);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleMutationModule = async () => {
     try {
       showLoader(true);
       const currentTeacherId = session._id;
@@ -136,7 +152,6 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
             asset: {
               _type: "reference",
               _ref: res._id,
-              _key: `index-${i}-${Math.round(Math.random() * 1000) + 1000}`,
             },
           });
         }
@@ -146,9 +161,21 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
         data["fileMaterial"] = fileRefs;
       }
 
-      setLoaderMsg("Creating module...");
-      const response = await client.create(data);
-      console.log(response);
+      if (props.isEdit) {
+        setLoaderMsg("Updating module...");
+        const response = await client
+          .patch(props.dataToEdit._id)
+          .set(data)
+          .commit();
+
+        console.log(response);
+      } else {
+        setLoaderMsg("Creating module...");
+        const response = await client.create(data, {
+          autoGenerateArrayKeys: true,
+        });
+        console.log(response);
+      }
 
       if (props.onClose) props.onClose();
     } catch (e) {
@@ -162,6 +189,19 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
     if (!props.open) resetFields();
   }, [props.open]);
 
+  useEffect(() => {
+    if (props.isEdit) {
+      console.log(props.dataToEdit);
+      const { title, goal, description, coverImage } = props.dataToEdit;
+
+      setTitle(title);
+      setGoal(goal);
+      setDescription(description);
+      if (coverImage?.asset?._ref)
+        setPreviewImage(converToImg(coverImage.asset._ref).toString());
+    }
+  }, [props.dataToEdit, props.isEdit]);
+
   return (
     <Dialog
       open={props.open}
@@ -174,7 +214,7 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
         <Stack direction={"row"} spacing={1} alignItems={"center"}>
           <Article color="primary" />
           <Typography variant="h5" fontWeight={700}>
-            Modul Baru
+            {props.isEdit ? "Edit Modul" : "Modul Baru"}
           </Typography>
         </Stack>
         <Grid container spacing={2} mt={1}>
@@ -324,12 +364,63 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
               </Grid>
             </Grid>
           </Grid>
-          {files.length > 0 ? (
+          {files.length > 0 || props.dataToEdit?.fileMaterial?.length > 0 ? (
             <Grid item xs={12}>
               <Grid container spacing={2} alignItems={"center"}>
                 <Grid item xs={3}></Grid>
                 <Grid item xs={9}>
                   <Stack direction={"row"} spacing={2} overflow={"auto"}>
+                    {props.dataToEdit?.fileMaterial?.map(
+                      ({ asset }: any, index: number) => {
+                        return (
+                          <Box border={1} borderRadius={"8px"} boxShadow={2}>
+                            <Box
+                              borderRadius={"8px 8px 0 0"}
+                              minWidth={144}
+                              height={56}
+                              sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                bgcolor: (theme) =>
+                                  theme.palette.secondary.main,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                fontWeight={700}
+                                textTransform={"uppercase"}
+                              >
+                                {asset.extension}
+                              </Typography>
+                            </Box>
+                            <Stack p={1}>
+                              <Typography variant="caption">
+                                {fileNameEllipsis(asset.originalFilename)}
+                              </Typography>
+                              <Stack
+                                direction={"row"}
+                                alignItems={"center"}
+                                justifyContent={"space-between"}
+                              >
+                                <Typography variant="caption">
+                                  {formatBytes(asset.size)}
+                                </Typography>
+                                <IconButton
+                                  size="small"
+                                  color="primary"
+                                  onClick={() =>
+                                    handleRemoveUploadedFile(asset._id, index)
+                                  }
+                                >
+                                  <Delete fontSize={"small"} />
+                                </IconButton>
+                              </Stack>
+                            </Stack>
+                          </Box>
+                        );
+                      }
+                    )}
                     {files.map((file, index) => {
                       return (
                         <Box border={1} borderRadius={"8px"} boxShadow={2}>
@@ -393,14 +484,19 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
           <Button
             variant="contained"
             color="primary"
-            onClick={() => handleNewModule()}
+            onClick={() => handleMutationModule()}
           >
-            Tambah Baru
+            {props.isEdit ? "Edit" : "Tambah Baru"}
           </Button>
         </Stack>
       </Box>
     </Dialog>
   );
+};
+
+ModuleFormModal.defaultProps = {
+  isEdit: false,
+  dataToEdit: undefined,
 };
 
 export default ModuleFormModal;
