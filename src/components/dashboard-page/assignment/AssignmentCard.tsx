@@ -9,9 +9,14 @@ import {
 } from "@mui/material";
 import assignmentImg from "../../../assets/assignment-image.jpg";
 import { useNavigate, Link as RouterLink } from "react-router-dom";
+import { useContext } from "react";
+import { DashboardContext } from "../../../layouts/DashboardLayout";
 
 const AssignmentCard: React.FC = () => {
   const navigate = useNavigate();
+  const {
+    session: { is_admin },
+  } = useContext(DashboardContext);
 
   return (
     <Card variant="outlined" sx={{ boxShadow: 2 }}>
@@ -30,12 +35,12 @@ const AssignmentCard: React.FC = () => {
         </Typography>
         <Stack
           alignItems="flex-end"
-          justifyContent="space-between"
+          justifyContent={is_admin ? "space-between" : "end"}
           direction={{ xs: "column", md: "row" }}
           spacing={1}
         >
           <Button
-            fullWidth
+            sx={{ width: "48%" }}
             variant="contained"
             size="small"
             color="secondary"
@@ -53,9 +58,16 @@ const AssignmentCard: React.FC = () => {
               Lihat Detail
             </Link>
           </Button>
-          <Button fullWidth variant="contained" size="small">
-            Nilai
-          </Button>
+          {is_admin ? (
+            <Button
+              sx={{ width: "48%" }}
+              fullWidth
+              variant="contained"
+              size="small"
+            >
+              Nilai
+            </Button>
+          ) : null}
         </Stack>
       </CardContent>
     </Card>

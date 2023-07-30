@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { compare } from "bcrypt-ts/browser";
+import Cookies from "js-cookie";
 import {
   Avatar,
   Box,
@@ -8,10 +12,57 @@ import {
   Typography,
 } from "@mui/material";
 import { LockOutlined } from "@mui/icons-material";
-import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { client } from "../../lib/sanity-client";
+import type UserType from "../../types/user.types";
 
 const LoginComponent: React.FC = () => {
   const navigate = useNavigate();
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const resetFields = () => {
+    setEmail("");
+    setPassword("");
+  };
+
+  const handleLogin = async () => {
+    if (email.length === 0 || password.length === 0) {
+      alert("Silahkan isi email dan password terlebih dahulu");
+      return;
+    }
+
+    const data = await client.fetch<UserType[]>(
+      "*[_type == 'user' && email == $email]{ _id, email, password, name, username, is_admin }",
+      { email: email }
+    );
+
+    if (data.length === 0) {
+      resetFields();
+      alert("Email atau Password salah, Silahkan coba kembali");
+      return;
+    }
+
+    const isSame = await compare(password, data[0].password);
+
+    if (!isSame) {
+      resetFields();
+      alert("Email atau Password salah, Silahkan coba kembali");
+      return;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _, ...savedValue } = data[0];
+    Cookies.set("current-session", JSON.stringify(savedValue));
+    navigate("/dashboard");
+  };
+
+  useEffect(() => {
+    if (Cookies.get("current-session")) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [navigate]);
+
   return (
     <Box
       boxShadow={4}
@@ -43,6 +94,8 @@ const LoginComponent: React.FC = () => {
           name="email"
           autoComplete="email"
           autoFocus
+          value={email}
+          onChange={(e) => setEmail(e.currentTarget.value)}
         />
         <TextField
           margin="normal"
@@ -53,13 +106,15 @@ const LoginComponent: React.FC = () => {
           type="password"
           id="password"
           autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.currentTarget.value)}
         />
 
         <Button
           fullWidth
           variant="contained"
           sx={{ mt: 3, mb: 2 }}
-          onClick={() => navigate("/dashboard")}
+          onClick={() => handleLogin()}
         >
           Masuk
         </Button>
