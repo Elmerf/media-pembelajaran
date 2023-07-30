@@ -25,22 +25,32 @@ import { client } from "../../../lib/sanity-client";
 import { DashboardContext } from "../../../layouts/DashboardLayout";
 import formatBytes from "../../../helpers/format-bytes";
 import fileNameEllipsis from "../../../helpers/filename-ellipsis";
+import { converToImg } from "../../../lib/sanity-img";
+import ModuleFormModal from "./ModuleFormModal";
 
 const ModuleDetail: React.FC = () => {
   const params = useParams();
 
-  const { showLoader, setLoaderMsg } = useContext(DashboardContext);
+  const {
+    session: { is_admin },
+    showLoader,
+    setLoaderMsg,
+  } = useContext(DashboardContext);
 
   const downloadRef = useRef<HTMLAnchorElement>(null);
 
   const [detailData, setDetailData] = useState<any>();
+  const [assignment, setAssignments] = useState([]);
+
+  const [openForm, setOpenForm] = useState(false);
 
   useEffect(() => {
+    const id = params.id;
+
     const fetchDetail = async () => {
       try {
         showLoader(true);
         setLoaderMsg("Fetching Module Detail...");
-        const id = params.id;
 
         const data = await client.fetch(
           `*[_type == 'module' && _id == $_id]{
@@ -50,6 +60,7 @@ const ModuleDetail: React.FC = () => {
           },
           fileMaterial[] {
             asset->{
+              _id,
               url,
               originalFilename,
               size,
@@ -60,6 +71,14 @@ const ModuleDetail: React.FC = () => {
           { _id: id }
         );
 
+        const assignment = await client.fetch(
+          "*[_type == 'assignment' && moduleMaterial._ref == $module_id]",
+          {
+            module_id: id,
+          }
+        );
+
+        setAssignments(assignment);
         setDetailData(data);
       } catch (e) {
         console.log(e);
@@ -71,6 +90,33 @@ const ModuleDetail: React.FC = () => {
     if (!detailData) {
       fetchDetail();
     }
+
+    const subscribeDetail = client
+      .listen(
+        `*[_type == 'module' && _id == $_id]{
+      ...,
+      teacher->{
+        name
+      },
+      fileMaterial[] {
+        asset->{
+          _id,
+          url,
+          originalFilename,
+          size,
+          extension,
+        }
+      },
+    }[0]`,
+        { _id: id }
+      )
+      .subscribe(({ result }) => {
+        setDetailData(result);
+      });
+
+    return () => {
+      subscribeDetail.unsubscribe();
+    };
   }, [detailData, params.id, setLoaderMsg, showLoader]);
 
   return detailData ? (
@@ -86,17 +132,23 @@ const ModuleDetail: React.FC = () => {
             <Typography variant="h6" fontWeight="bold" pt={1}>
               {detailData.title}
             </Typography>
-            <IconButton size="small">
-              <Edit />
-            </IconButton>
+            {is_admin ? (
+              <IconButton size="small" onClick={() => setOpenForm(true)}>
+                <Edit />
+              </IconButton>
+            ) : null}
           </Stack>
           <img
-            src={moduleImage}
+            src={
+              detailData?.coverImage
+                ? converToImg(detailData.coverImage.asset._ref).toString()
+                : moduleImage
+            }
             style={{ width: "100%", maxHeight: "24em", objectFit: "cover" }}
           />
           <Stack direction={"row"} justifyContent="space-between">
             <Typography variant="body2">
-              Guru: {detailData.teacher.name}
+              Guru: {detailData.teacher?.name}
             </Typography>
             <Typography variant="body2">
               Update: {new Date(detailData._updatedAt).toLocaleString()}
@@ -119,7 +171,7 @@ const ModuleDetail: React.FC = () => {
           <Box py={2}>
             <Typography variant="h6">File Pendukung</Typography>
             <a href={"#"} hidden ref={downloadRef}></a>
-            {detailData.fileMaterial.length > 0 ? (
+            {detailData.fileMaterial?.length > 0 ? (
               <Stack direction={"row"} spacing={2} overflow={"auto"}>
                 {detailData.fileMaterial.map(
                   ({ asset }: any, index: number) => {
@@ -193,17 +245,60 @@ const ModuleDetail: React.FC = () => {
             <Circle fontSize="inherit" color="primary" />
           </Divider>
           <Box py={2}>
-            <Typography variant="h6" pb={1}>
-              Assignment
-            </Typography>
-            <Grid container justifyContent={"center"}>
-              <Grid item xs={12} md={3}>
-                <AssignmentCard />
+            <Stack
+              justifyContent="space-between"
+              alignItems="center"
+              direction="row"
+            >
+              <Typography variant="h6">Assignment</Typography>
+              {is_admin ? (
+                <IconButton size="small">
+                  <Add />
+                </IconButton>
+              ) : null}
+            </Stack>
+            {assignment.length > 0 ? (
+              <Grid
+                container
+                py={1}
+                direction={{ xs: "column", md: "row" }}
+                rowSpacing={2}
+                columnSpacing={{ xs: 0, md: 2 }}
+              >
+                {assignment.map((assignment: any, index: number) => {
+                  return (
+                    <Grid item xs={12} md={3} key={assignment._id}>
+                      <AssignmentCard
+                        id={assignment._id}
+                        coverImage={assignment?.coverImage?.asset?._ref}
+                        deadline={assignment?.deadline}
+                        description={assignment?.description}
+                        title={assignment.title}
+                      />
+                    </Grid>
+                  );
+                })}
               </Grid>
-            </Grid>
+            ) : (
+              <Stack justifyContent="center" alignItems="center" py={4}>
+                <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
+                <Typography textAlign="center" variant="body1">
+                  Tidak ada Assignment
+                </Typography>
+              </Stack>
+            )}
           </Box>
         </Box>
       </Container>
+      <ModuleFormModal
+        isEdit={true}
+        dataToEdit={detailData}
+        open={openForm}
+        onClose={() => {
+          location.reload();
+          setOpenForm(false);
+        }}
+      />
     </Box>
   ) : null;
 };

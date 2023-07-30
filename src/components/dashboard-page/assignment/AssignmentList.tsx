@@ -1,4 +1,4 @@
-import { Add, ReportProblem } from "@mui/icons-material";
+import { Add, ArrowRight, ReportProblem } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -8,9 +8,32 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import SkeletonCard from "../commons/SkeletonCard";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { client } from "../../../lib/sanity-client";
 import AssignmentCard from "./AssignmentCard";
 
 const AssignmentList: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [isLoading, setLoading] = useState(true);
+  const [assignment, setAssignment] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchAsync = async () => {
+      setLoading(true);
+      const dataAssignment = await client.fetch(
+        "*[_type == 'assignment'] | order(_updatedAt desc)"
+      );
+
+      setAssignment(dataAssignment);
+      setLoading(false);
+    };
+
+    fetchAsync();
+  }, []);
+
   return (
     <Box px={4}>
       <Container disableGutters maxWidth="lg">
@@ -55,37 +78,84 @@ const AssignmentList: React.FC = () => {
             <Typography variant="h6" fontWeight="bold" pt={1}>
               Daftar Semua Assignment
             </Typography>
-            <IconButton size="small">
+            {/* <IconButton size="small">
               <Add />
-            </IconButton>
+            </IconButton> */}
           </Stack>
-          <Grid
+          {/* <Grid
             container
             py={1}
             direction={{ xs: "column", md: "row" }}
             rowSpacing={2}
             columnSpacing={{ xs: 0, md: 2 }}
           >
-            {new Array(3).fill(0).map(() => {
+            {new Array(5).fill(0).map(() => {
               return (
                 <Grid item xs={12} md={3}>
-                  <AssignmentCard />
+                  <ModuleCard />
                 </Grid>
               );
             })}
-          </Grid>
-          <Stack justifyContent="center" alignItems="center">
-            <Button sx={{ width: "16em", m: 2, borderRadius: 2 }}>
-              Load More
-            </Button>
-          </Stack>
+          </Grid> */}
           {/* EMPTY STATE */}
-          {/* <Stack justifyContent="center" alignItems="center" py={4}>
-            <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
-            <Typography textAlign="center" variant="body1">
-              Tidak ada Modul
-            </Typography>
-          </Stack> */}
+          {assignment.length > 0 && !isLoading ? (
+            <Grid
+              container
+              py={1}
+              direction={{ xs: "column", md: "row" }}
+              rowSpacing={2}
+              columnSpacing={{ xs: 0, md: 2 }}
+            >
+              {assignment.map((assignment: any) => {
+                return assignment?._id ? (
+                  <Grid item xs={12} md={3} key={assignment._id}>
+                    <AssignmentCard
+                      id={assignment._id}
+                      title={assignment.title}
+                      description={assignment.description}
+                      coverImage={assignment.coverImage?.asset?._ref}
+                      deadline={assignment.deadline}
+                    />
+                  </Grid>
+                ) : null;
+              })}
+              {/* <Grid item xs={12}>
+                <Grid container justifyContent={"center"}>
+                  <Grid item xs={3}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      endIcon={<ArrowRight fontSize="large" />}
+                      onClick={() => navigate("/dashboard/modules")}
+                    >
+                      Modul Lainnya
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Grid> */}
+            </Grid>
+          ) : isLoading ? (
+            <Grid
+              container
+              py={1}
+              direction={{ xs: "column", md: "row" }}
+              rowSpacing={2}
+              columnSpacing={{ xs: 0, md: 2 }}
+            >
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Grid item xs={12} md={3} key={index}>
+                  <SkeletonCard />
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Stack justifyContent="center" alignItems="center" py={4}>
+              <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
+              <Typography textAlign="center" variant="body1">
+                Tidak ada Assignment
+              </Typography>
+            </Stack>
+          )}
         </Box>
       </Container>
     </Box>
