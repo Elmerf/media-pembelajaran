@@ -105,7 +105,7 @@ const AssignmentDetail: React.FC = () => {
             </Typography>
             <Grid container justifyContent={"center"}>
               <Grid item xs={12} md={3}>
-                <ModuleCard />
+                {/* <ModuleCard /> */}
               </Grid>
             </Grid>
           </Box>
