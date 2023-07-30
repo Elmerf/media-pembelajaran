@@ -33,7 +33,7 @@ const LoginComponent: React.FC = () => {
     }
 
     const data = await client.fetch<UserType[]>(
-      "*[_type == 'user' && email == $email]{ email, password, name, username, is_admin }",
+      "*[_type == 'user' && email == $email]{ _id, email, password, name, username, is_admin }",
       { email: email }
     );
 

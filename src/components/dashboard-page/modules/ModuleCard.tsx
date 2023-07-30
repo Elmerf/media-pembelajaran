@@ -9,23 +9,48 @@ import {
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import moduleImage from "../../../assets/module-image.jpg";
+import { converToImg } from "../../../lib/sanity-img";
 
-const ModuleCard: React.FC = () => {
+type ModuleCard = {
+  id: string;
+  title: string;
+  description: string;
+  coverImage: string;
+};
+
+const ModuleCard: React.FC<ModuleCard> = (props) => {
   return (
-    <Card variant="outlined" sx={{ boxShadow: 2 }}>
-      <CardMedia component="img" image={moduleImage} height={"172em"} />
-      <CardContent>
-        <Typography variant="body1" fontWeight="bold" pb={2}>
-          Judul Modul
-        </Typography>
-        <Typography variant="body2" pb={2}>
-          Deskripsi Modul
-        </Typography>
-        {/* <Typography variant="body2">Siswa mengumpulkan: 4/30</Typography>
-        <Typography variant="body2">Siswa dinilai: 1/30</Typography>
-        <Typography variant="body2" pb={2}>
-          Deadline: {new Date().toLocaleString("id")}
-        </Typography> */}
+    <Card
+      variant="outlined"
+      sx={{ boxShadow: 2, height: "100%", minHeight: 380 }}
+    >
+      <CardMedia
+        component="img"
+        image={
+          props.coverImage
+            ? converToImg(props.coverImage).toString()
+            : moduleImage
+        }
+        height={144}
+      />
+      <CardContent
+        sx={{
+          height: "calc(100% - 144px)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        }}
+      >
+        <Stack spacing={1}>
+          <Typography variant="body1" fontWeight="bold">
+            {props.title}
+          </Typography>
+          <Typography variant="body2">
+            {props.description.length > 200
+              ? props.description.substring(0, 200).trim().concat("...")
+              : props.description}
+          </Typography>
+        </Stack>
         <Stack justifyContent="end" direction="row">
           <Button
             variant="contained"
@@ -34,18 +59,15 @@ const ModuleCard: React.FC = () => {
             color="secondary"
           >
             <Link
+              underline="none"
               component={RouterLink}
-              to={`/dashboard/module/${Math.floor(
-                100000 + Math.random() * 900000
-              )}`}
+              to={`/dashboard/module/${props.id}`}
               variant="body2"
+              color={"black"}
             >
               Lihat Detail
             </Link>
           </Button>
-          {/* <Button variant="contained" size="small" sx={{ width: "48%" }}>
-            Nilai
-          </Button> */}
         </Stack>
       </CardContent>
     </Card>
