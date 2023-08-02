@@ -25,17 +25,15 @@ import { DashboardContext } from "../../../layouts/DashboardLayout";
 import { useLocation } from "react-router-dom";
 
 const SilabusPage: React.FC = () => {
-  // const [numPages, setNumPages] = useState<number>();
-
-  // const onDocumentLoadSuccess: OnDocumentLoadSuccess = ({ numPages }) => {
-  //   setNumPages(numPages);
-  // };
   const {
     session: { is_admin },
+    showLoader,
+    setLoaderMsg,
   } = useContext(DashboardContext);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [silabus, setSilabus] = useState<any>();
+  const [loading, setLoading] = useState(false);
 
   const handleEditSilabus = () => {
     if (inputRef.current) {
@@ -71,55 +69,32 @@ const SilabusPage: React.FC = () => {
   };
 
   useEffect(() => {
-    client
-      .fetch(
-        `*[_type == 'silabus']{
-            silabusFile {
-              asset->{url}
-            }
-          }[0]
-        `
-      )
-      .then((data) => {
-        setSilabus(data);
-      });
-  }, []);
+    if (!silabus) {
+      setLoading(true);
+      showLoader(true);
+      setLoaderMsg("Loading Silabus...");
+      client
+        .fetch(
+          `*[_type == 'silabus']{
+              silabusFile {
+                asset->{url}
+              }
+            }[0]
+          `
+        )
+        .then((data) => {
+          setSilabus(data);
+        })
+        .finally(() => {
+          setLoading(false);
+          showLoader(false);
+        });
+    }
+  }, [setLoaderMsg, showLoader, silabus]);
 
   return (
     <Box px={4}>
       <Container disableGutters maxWidth="lg">
-        {/* <Typography variant="body1" component="h6" py={1.5}>
-          Selamat Pagi, <strong>Admin</strong>
-        </Typography> */}
-        {/* <Box>
-          <Stack
-            justifyContent="space-between"
-            alignItems="center"
-            direction="row"
-          >
-            <Typography variant="h6" fontWeight="bold">
-              Assignment
-            </Typography>
-            <IconButton size="small">
-              <Add />
-            </IconButton>
-          </Stack>
-          <Grid
-            container
-            py={1}
-            direction={{ xs: "column", md: "row" }}
-            rowSpacing={2}
-            columnSpacing={{ xs: 0, md: 2 }}
-          >
-            {new Array(5).fill(0).map(() => {
-              return (
-                <Grid item xs={12} md={3}>
-                  <AssignmentCard />
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box> */}
         <Box>
           <input
             ref={inputRef}
@@ -142,50 +117,21 @@ const SilabusPage: React.FC = () => {
               </IconButton>
             ) : null}
           </Stack>
-          {/* <Box className="Example__container__document">
-            <Document
-              options={{
-                cMapUrl: "cmaps/",
-                cMapPacked: true,
-              }}
-              file="/sample.pdf"
-              onLoadSuccess={onDocumentLoadSuccess}
-            >
-              {Array.from(new Array(numPages), (el, index) => (
-                <Page key={`page_${index + 1}`} pageNumber={index + 1} />
-              ))}
-            </Document>
-          </Box> */}
-          {/* <Grid
-            container
-            py={1}
-            direction={{ xs: "column", md: "row" }}
-            rowSpacing={2}
-            columnSpacing={{ xs: 0, md: 2 }}
-          >
-            {new Array(5).fill(0).map(() => {
-              return (
-                <Grid item xs={12} md={3}>
-                  <ModuleCard />
-                </Grid>
-              );
-            })}
-          </Grid> */}
           {/* EMPTY STATE */}
           {silabus ? (
             <iframe
               src={`${silabus?.silabusFile?.asset?.url as string}#view-fit`}
               width={"100%"}
-              style={{ marginBlock: "1em", minHeight: "36em" }}
+              style={{ marginBlock: "1em", minHeight: "36em", border: 0 }}
             />
-          ) : (
+          ) : !loading ? (
             <Stack justifyContent="center" alignItems="center" py={4}>
               <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
               <Typography textAlign="center" variant="body1">
                 Tidak ada Silabus
               </Typography>
             </Stack>
-          )}
+          ) : null}
         </Box>
       </Container>
     </Box>

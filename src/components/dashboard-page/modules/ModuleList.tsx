@@ -9,17 +9,26 @@ import {
   Typography,
 } from "@mui/material";
 import SkeletonCard from "../commons/SkeletonCard";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ModuleCard from "./ModuleCard";
 import { useNavigate } from "react-router-dom";
 import { client } from "../../../lib/sanity-client";
-// import ModuleCard from "./ModuleCard";
+import { DashboardContext } from "../../../layouts/DashboardLayout";
+import ModuleFormModal from "./ModuleFormModal";
 
 const ModuleList: React.FC = () => {
   const navigate = useNavigate();
+  const {
+    session: { is_admin },
+  } = useContext(DashboardContext);
 
+  const [openModule, setOpenModule] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [modules, setModules] = useState<any[]>([]);
+
+  const handleAddModule = () => {
+    setOpenModule(true);
+  };
 
   useEffect(() => {
     const fetchAsync = async () => {
@@ -33,43 +42,22 @@ const ModuleList: React.FC = () => {
     };
 
     fetchAsync();
+
+    // const subModules = client
+    //   .listen("*[_type == 'module'] | order(_updatedAt)")
+    //   .subscribe((Update) => {
+    //     const newData: any = Update.result;
+    //     setModules((modules) => [...modules, newData]);
+    //   });
+
+    // return () => {
+    //   subModules.unsubscribe();
+    // };
   }, []);
 
   return (
     <Box px={4}>
       <Container disableGutters maxWidth="lg">
-        {/* <Typography variant="body1" component="h6" py={1.5}>
-          Selamat Pagi, <strong>Admin</strong>
-        </Typography> */}
-        {/* <Box>
-          <Stack
-            justifyContent="space-between"
-            alignItems="center"
-            direction="row"
-          >
-            <Typography variant="h6" fontWeight="bold">
-              Assignment
-            </Typography>
-            <IconButton size="small">
-              <Add />
-            </IconButton>
-          </Stack>
-          <Grid
-            container
-            py={1}
-            direction={{ xs: "column", md: "row" }}
-            rowSpacing={2}
-            columnSpacing={{ xs: 0, md: 2 }}
-          >
-            {new Array(5).fill(0).map(() => {
-              return (
-                <Grid item xs={12} md={3}>
-                  <AssignmentCard />
-                </Grid>
-              );
-            })}
-          </Grid>
-        </Box> */}
         <Box>
           <Stack
             justifyContent="space-between"
@@ -79,25 +67,12 @@ const ModuleList: React.FC = () => {
             <Typography variant="h6" fontWeight="bold" pt={1}>
               Daftar Semua Modul
             </Typography>
-            <IconButton size="small">
-              <Add />
-            </IconButton>
+            {is_admin ? (
+              <IconButton size="small" onClick={() => handleAddModule()}>
+                <Add />
+              </IconButton>
+            ) : null}
           </Stack>
-          {/* <Grid
-            container
-            py={1}
-            direction={{ xs: "column", md: "row" }}
-            rowSpacing={2}
-            columnSpacing={{ xs: 0, md: 2 }}
-          >
-            {new Array(5).fill(0).map(() => {
-              return (
-                <Grid item xs={12} md={3}>
-                  <ModuleCard />
-                </Grid>
-              );
-            })}
-          </Grid> */}
           {/* EMPTY STATE */}
           {modules.length > 0 && !isLoading ? (
             <Grid
@@ -119,20 +94,6 @@ const ModuleList: React.FC = () => {
                   </Grid>
                 ) : null;
               })}
-              {/* <Grid item xs={12}>
-                <Grid container justifyContent={"center"}>
-                  <Grid item xs={3}>
-                    <Button
-                      fullWidth
-                      variant="contained"
-                      endIcon={<ArrowRight fontSize="large" />}
-                      onClick={() => navigate("/dashboard/modules")}
-                    >
-                      Modul Lainnya
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Grid> */}
             </Grid>
           ) : isLoading ? (
             <Grid
@@ -158,6 +119,12 @@ const ModuleList: React.FC = () => {
           )}
         </Box>
       </Container>
+      <ModuleFormModal
+        open={openModule}
+        onClose={() => {
+          setOpenModule(false);
+        }}
+      />
     </Box>
   );
 };

@@ -27,6 +27,7 @@ import formatBytes from "../../../helpers/format-bytes";
 import fileNameEllipsis from "../../../helpers/filename-ellipsis";
 import { converToImg } from "../../../lib/sanity-img";
 import ModuleFormModal from "./ModuleFormModal";
+import SwiperComponent from "../commons/SwiperComponent";
 
 const ModuleDetail: React.FC = () => {
   const params = useParams();
@@ -40,7 +41,6 @@ const ModuleDetail: React.FC = () => {
   const downloadRef = useRef<HTMLAnchorElement>(null);
 
   const [detailData, setDetailData] = useState<any>();
-  const [assignment, setAssignments] = useState([]);
 
   const [openForm, setOpenForm] = useState(false);
 
@@ -71,14 +71,6 @@ const ModuleDetail: React.FC = () => {
           { _id: id }
         );
 
-        const assignment = await client.fetch(
-          "*[_type == 'assignment' && moduleMaterial._ref == $module_id]",
-          {
-            module_id: id,
-          }
-        );
-
-        setAssignments(assignment);
         setDetailData(data);
       } catch (e) {
         console.log(e);
@@ -120,7 +112,7 @@ const ModuleDetail: React.FC = () => {
   }, [detailData, params.id, setLoaderMsg, showLoader]);
 
   return detailData ? (
-    <Box px={4}>
+    <Box px={4} pb={2}>
       <Container disableGutters maxWidth="lg">
         <Box>
           <Stack
@@ -172,66 +164,70 @@ const ModuleDetail: React.FC = () => {
             <Typography variant="h6">File Pendukung</Typography>
             <a href={"#"} hidden ref={downloadRef}></a>
             {detailData.fileMaterial?.length > 0 ? (
-              <Stack direction={"row"} spacing={2} overflow={"auto"}>
-                {detailData.fileMaterial.map(
-                  ({ asset }: any, index: number) => {
-                    return (
-                      <Box
-                        border={1}
-                        borderRadius={"8px"}
-                        boxShadow={2}
-                        key={index}
-                      >
+              is_admin ? (
+                <Stack direction={"row"} spacing={2} overflow={"auto"}>
+                  {detailData.fileMaterial.map(
+                    ({ asset }: any, index: number) => {
+                      return (
                         <Box
-                          borderRadius={"8px 8px 0 0"}
-                          minWidth={144}
-                          height={56}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            bgcolor: (theme) => theme.palette.secondary.main,
-                          }}
+                          border={1}
+                          borderRadius={"8px"}
+                          boxShadow={2}
+                          key={index}
                         >
-                          <Typography
-                            variant="body2"
-                            fontWeight={700}
-                            textTransform={"uppercase"}
+                          <Box
+                            borderRadius={"8px 8px 0 0"}
+                            minWidth={144}
+                            height={56}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              bgcolor: (theme) => theme.palette.secondary.main,
+                            }}
                           >
-                            {asset.extension}
-                          </Typography>
-                        </Box>
-                        <Stack p={1}>
-                          <Typography variant="caption">
-                            {fileNameEllipsis(asset.originalFilename)}
-                          </Typography>
-                          <Stack
-                            direction={"row"}
-                            alignItems={"center"}
-                            justifyContent={"space-between"}
-                          >
-                            <Typography variant="caption">
-                              {formatBytes(asset.size)}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => {
-                                if (downloadRef.current) {
-                                  downloadRef.current.href = `${asset.url}?dl=`;
-                                  downloadRef.current.click();
-                                }
-                              }}
+                            <Typography
+                              variant="body2"
+                              fontWeight={700}
+                              textTransform={"uppercase"}
                             >
-                              <Download fontSize={"small"} />
-                            </IconButton>
+                              {asset.extension}
+                            </Typography>
+                          </Box>
+                          <Stack p={1}>
+                            <Typography variant="caption">
+                              {fileNameEllipsis(asset.originalFilename)}
+                            </Typography>
+                            <Stack
+                              direction={"row"}
+                              alignItems={"center"}
+                              justifyContent={"space-between"}
+                            >
+                              <Typography variant="caption">
+                                {formatBytes(asset.size)}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => {
+                                  if (downloadRef.current) {
+                                    downloadRef.current.href = `${asset.url}?dl=`;
+                                    downloadRef.current.click();
+                                  }
+                                }}
+                              >
+                                <Download fontSize={"small"} />
+                              </IconButton>
+                            </Stack>
                           </Stack>
-                        </Stack>
-                      </Box>
-                    );
-                  }
-                )}
-              </Stack>
+                        </Box>
+                      );
+                    }
+                  )}
+                </Stack>
+              ) : (
+                <SwiperComponent dataToDisplay={detailData.fileMaterial} />
+              )
             ) : (
               <Stack justifyContent="center" alignItems="center" py={4}>
                 <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
@@ -244,50 +240,6 @@ const ModuleDetail: React.FC = () => {
           <Divider role="presentation">
             <Circle fontSize="inherit" color="primary" />
           </Divider>
-          <Box py={2}>
-            <Stack
-              justifyContent="space-between"
-              alignItems="center"
-              direction="row"
-            >
-              <Typography variant="h6">Assignment</Typography>
-              {is_admin ? (
-                <IconButton size="small">
-                  <Add />
-                </IconButton>
-              ) : null}
-            </Stack>
-            {assignment.length > 0 ? (
-              <Grid
-                container
-                py={1}
-                direction={{ xs: "column", md: "row" }}
-                rowSpacing={2}
-                columnSpacing={{ xs: 0, md: 2 }}
-              >
-                {assignment.map((assignment: any, index: number) => {
-                  return (
-                    <Grid item xs={12} md={3} key={assignment._id}>
-                      <AssignmentCard
-                        id={assignment._id}
-                        coverImage={assignment?.coverImage?.asset?._ref}
-                        deadline={assignment?.deadline}
-                        description={assignment?.description}
-                        title={assignment.title}
-                      />
-                    </Grid>
-                  );
-                })}
-              </Grid>
-            ) : (
-              <Stack justifyContent="center" alignItems="center" py={4}>
-                <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
-                <Typography textAlign="center" variant="body1">
-                  Tidak ada Assignment
-                </Typography>
-              </Stack>
-            )}
-          </Box>
         </Box>
       </Container>
       <ModuleFormModal

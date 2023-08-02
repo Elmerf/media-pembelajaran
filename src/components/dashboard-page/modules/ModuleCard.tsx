@@ -42,12 +42,12 @@ const ModuleCard: React.FC<ModuleCard> = (props) => {
         }}
       >
         <Stack spacing={1}>
-          <Typography variant="body1" fontWeight="bold">
+          <Typography variant="body1" fontWeight="bold" lineHeight={1.25}>
             {props.title}
           </Typography>
           <Typography variant="body2">
             {props.description.length > 200
-              ? props.description.substring(0, 200).trim().concat("...")
+              ? props.description.substring(0, 150).trim().concat("...")
               : props.description}
           </Typography>
         </Stack>

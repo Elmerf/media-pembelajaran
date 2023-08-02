@@ -23,11 +23,13 @@ import ModuleCard from "./modules/ModuleCard";
 import AssignmentCard from "./assignment/AssignmentCard";
 import ModuleFormModal from "./modules/ModuleFormModal";
 import { useNavigate } from "react-router-dom";
+import AssignmentFormModal from "./assignment/AssignmentFormModal";
 
 const DashboardContent: React.FC = () => {
   const navigate = useNavigate();
 
   const [openModule, setOpenModule] = useState(false);
+  const [openAssignment, setOpenAssignment] = useState(false);
   const [isLoading, setLoading] = useState(true);
   const [modules, setModules] = useState<any[]>([]);
   const [assignments, setAssignments] = useState([]);
@@ -52,6 +54,13 @@ const DashboardContent: React.FC = () => {
     }
 
     return "Selamat Malam";
+  };
+
+  const handleAddModule = () => {
+    setOpenModule(true);
+  };
+  const handleAddAssignment = () => {
+    setOpenAssignment(true);
   };
 
   useEffect(() => {
@@ -88,10 +97,6 @@ const DashboardContent: React.FC = () => {
     };
   }, []);
 
-  const handleAddModule = () => {
-    setOpenModule(true);
-  };
-
   return (
     <Box px={4} py={2}>
       <Container disableGutters maxWidth="lg">
@@ -105,7 +110,7 @@ const DashboardContent: React.FC = () => {
             direction="row"
           >
             <Typography variant="h6" fontWeight="bold">
-              Modul Tersedia
+              Modul Terbaru
             </Typography>
             {is_admin ? (
               <IconButton size="small" onClick={() => handleAddModule()}>
@@ -178,13 +183,18 @@ const DashboardContent: React.FC = () => {
             direction="row"
           >
             <Typography variant="h6" fontWeight="bold">
-              Assignment
+              Assignment Terbaru
             </Typography>
-            {/* {is_admin ? (
-              <IconButton size="small">
+            {is_admin ? (
+              <IconButton
+                size="small"
+                onClick={() => {
+                  handleAddAssignment();
+                }}
+              >
                 <Add />
               </IconButton>
-            ) : null} */}
+            ) : null}
           </Stack>
           {assignments.length > 0 && !isLoading ? (
             <Grid
@@ -250,6 +260,12 @@ const DashboardContent: React.FC = () => {
         open={openModule}
         onClose={() => {
           setOpenModule(false);
+        }}
+      />
+      <AssignmentFormModal
+        open={openAssignment}
+        onClose={() => {
+          setOpenAssignment(false);
         }}
       />
     </Box>
