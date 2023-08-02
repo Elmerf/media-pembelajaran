@@ -80,7 +80,7 @@ const AssignmentCard: React.FC<AssignmentCard> = (props) => {
                 Lihat Detail
               </Link>
             </Button>
-            {is_admin ? (
+            {/* {is_admin ? (
               <Button
                 variant="contained"
                 size="small"
@@ -89,7 +89,7 @@ const AssignmentCard: React.FC<AssignmentCard> = (props) => {
               >
                 Nilai Siswa
               </Button>
-            ) : null}
+            ) : null} */}
           </Stack>
         </Stack>
       </CardContent>

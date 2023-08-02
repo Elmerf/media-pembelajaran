@@ -1,32 +1,31 @@
 import {
-  Add,
   Circle,
   Download,
   Edit,
   ReportProblem,
+  Visibility,
 } from "@mui/icons-material";
 import {
   Box,
   Button,
   Container,
   Divider,
-  Grid,
   IconButton,
-  List,
-  ListItem,
   Stack,
   Typography,
 } from "@mui/material";
-import { useLocation, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
-import assignmentImage from "../../../assets/assignment-image.jpg";
-import AssignmentCard from "../assignment/AssignmentCard";
-import ModuleCard from "../modules/ModuleCard";
-import { client } from "../../../lib/sanity-client";
 import { useContext, useEffect, useRef, useState } from "react";
-import { DashboardContext } from "../../../layouts/DashboardLayout";
+import assignmentImage from "../../../assets/assignment-image.jpg";
 import fileNameEllipsis from "../../../helpers/filename-ellipsis";
 import formatBytes from "../../../helpers/format-bytes";
+import { DashboardContext } from "../../../layouts/DashboardLayout";
+import { client } from "../../../lib/sanity-client";
+import handleSource from "../../../helpers/source-handler";
+import AssignmentFormModal from "./AssignmentFormModal";
+import SwiperComponent from "../commons/SwiperComponent";
+import AssignmentGrading from "./AssignmentGrading";
 
 const AssignmentDetail: React.FC = () => {
   const params = useParams();
@@ -41,9 +40,8 @@ const AssignmentDetail: React.FC = () => {
   const assignmentRef = useRef<HTMLInputElement>(null);
 
   const [detailData, setDetailData] = useState<any>();
-  const [module, setModule] = useState<any>();
-
   const [openForm, setOpenForm] = useState(false);
+  const [openGrading, setOpenGrading] = useState(false);
 
   const handleSubmitAssignment: React.ChangeEventHandler<
     HTMLInputElement
@@ -51,9 +49,28 @@ const AssignmentDetail: React.FC = () => {
     if (e.target.files) {
       const data = e.target.files[0];
 
-      if (data) {
-        showLoader(true);
-        setLoaderMsg("Uploading Assignment...");
+      showLoader(true);
+      setLoaderMsg("Uploading Assignment...");
+
+      if (data && detailData?.grades?.studentfile?.asset?._updatedAt) {
+        const documentRes = await client.assets.upload("file", data);
+
+        const dataPatch = await client
+          .patch(detailData._id)
+          .unset([`grades[_key=="${detailData?.grades?._key}"]`])
+          .append("grades", [
+            {
+              student: { _type: "reference", _ref: _id },
+              studentfile: {
+                _type: "file",
+                asset: { _type: "reference", _ref: documentRes._id },
+              },
+            },
+          ])
+          .commit({ autoGenerateArrayKeys: true });
+      }
+
+      if (data && !detailData?.grades?.studentfile?.asset?._updatedAt) {
         const documentRes = await client.assets.upload("file", data);
 
         const dataPatch = await client
@@ -71,8 +88,9 @@ const AssignmentDetail: React.FC = () => {
           .commit({ autoGenerateArrayKeys: true });
 
         console.log(dataPatch);
-        showLoader(false);
       }
+      showLoader(false);
+      location.reload();
     }
   };
 
@@ -100,25 +118,27 @@ const AssignmentDetail: React.FC = () => {
             ${
               !is_admin
                 ? `grades[student._ref == $student_id] {
-              student,
+              ...,
               studentfile {
                 asset->
-              }
+              },
+              _key,
             }[0],`
-                : ""
+                : `grades[]{
+                  ...,
+                  student->{
+                    name
+                  },
+                    studentfile {
+                    ...,
+                    asset->
+                    }
+                }`
             } 
           }[0]`,
             { _id: id, student_id: _id }
           );
 
-          const module = await client.fetch(
-            "*[_type == 'module' && _id == $module_id][0]",
-            {
-              module_id: data.moduleMaterial._ref,
-            }
-          );
-
-          setModule(module);
           setDetailData(data);
         }
       } catch (e) {
@@ -131,10 +151,47 @@ const AssignmentDetail: React.FC = () => {
     if (!detailData) {
       fetchDetail();
     }
+
+    // const detailSubscribe = client
+    //   .listen(
+    //     `*[_type == 'assignment' && _id == $_id]{
+    //   ...,
+    //   fileMaterials[] {
+    //     asset->{
+    //       _id,
+    //       url,
+    //       originalFilename,
+    //       size,
+    //       extension,
+    //     }
+    //   },
+    //   ${
+    //     !is_admin
+    //       ? `grades[student._ref == $student_id] {
+    //     student,
+    //     studentfile {
+    //       asset->
+    //     },
+    //     _key,
+    //   }[0],`
+    //       : ""
+    //   }
+    // }[0]`,
+    //     { _id: id, student_id: _id }
+    //   )
+    //   .subscribe((newData) => {
+    //     const updatedData = newData.result;
+
+    //     setDetailData(updatedData);
+    //   });
+
+    // return () => {
+    //   detailSubscribe;
+    // };
   }, [_id, detailData, is_admin, params.id, setLoaderMsg, showLoader]);
 
   return detailData ? (
-    <Box px={4}>
+    <Box px={4} pb={2}>
       <Container disableGutters maxWidth="lg">
         <Box>
           <Stack
@@ -147,7 +204,7 @@ const AssignmentDetail: React.FC = () => {
               {detailData.title}
             </Typography>
             {is_admin ? (
-              <IconButton size="small">
+              <IconButton size="small" onClick={() => setOpenForm(true)}>
                 <Edit />
               </IconButton>
             ) : null}
@@ -164,8 +221,18 @@ const AssignmentDetail: React.FC = () => {
               alignItems={"center"}
             >
               <Stack>
-                <Typography variant="caption">Siswa mengumpulkan:</Typography>
-                <Typography variant="caption">Siswa dinilai: </Typography>
+                <Typography variant="caption">
+                  Siswa mengumpulkan: {detailData?.grades?.length ?? "0"}
+                </Typography>
+                <Typography variant="caption">
+                  Siswa dinilai:{" "}
+                  {detailData?.grades?.filter(
+                    (grade: any) =>
+                      typeof grade === "object" &&
+                      !Object.prototype.hasOwnProperty.call(grade, "grade")
+                  ).length ?? "0"}
+                  /{detailData?.grades?.length ?? "0"}
+                </Typography>
                 <Typography variant="caption">
                   Deadline:{" "}
                   {detailData.deadline
@@ -173,16 +240,16 @@ const AssignmentDetail: React.FC = () => {
                     : "N/A"}
                 </Typography>
               </Stack>
-              <Button variant="contained" sx={{ maxHeight: "2.5em" }}>
+              <Button
+                variant="contained"
+                sx={{ maxHeight: "2.5em" }}
+                onClick={() => setOpenGrading(true)}
+              >
                 Nilai Siswa
               </Button>
             </Stack>
           ) : (
-            <Stack
-              direction={"row"}
-              justifyContent={"space-between"}
-              alignItems={"center"}
-            >
+            <Stack direction={"row"} justifyContent={"space-between"}>
               <Stack>
                 <Typography variant="caption">
                   Nilai Tugas: {detailData?.grades?.grade ?? "Belum Dinilai"}
@@ -213,7 +280,90 @@ const AssignmentDetail: React.FC = () => {
                   Kumpulkan Tugas
                 </Button>
               ) : (
-                <Typography>Sudah Mengumpulkan</Typography>
+                <Stack spacing={1} direction={"row"} alignItems={"center"}>
+                  <Box border={1} borderRadius={"8px"} boxShadow={2}>
+                    <Box
+                      borderRadius={"8px 8px 0 0"}
+                      minWidth={178}
+                      height={56}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        bgcolor: (theme) => theme.palette.secondary.main,
+                      }}
+                    >
+                      <Typography
+                        variant="body2"
+                        fontWeight={700}
+                        textTransform={"uppercase"}
+                      >
+                        {detailData?.grades?.studentfile?.asset?.extension}
+                      </Typography>
+                    </Box>
+                    <Stack p={1}>
+                      <Typography variant="caption">
+                        {fileNameEllipsis(
+                          detailData?.grades?.studentfile?.asset
+                            ?.originalFilename ?? ""
+                        )}
+                      </Typography>
+                      <Stack
+                        direction={"row"}
+                        alignItems={"center"}
+                        justifyContent={"space-between"}
+                      >
+                        <Typography variant="caption">
+                          {formatBytes(
+                            detailData?.grades?.studentfile?.asset?.size
+                          )}
+                        </Typography>
+                        <Stack direction={"row"} alignItems={"center"}>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => {
+                              window
+                                .open(
+                                  handleSource(
+                                    detailData?.grades?.studentfile?.asset
+                                      ?.extension ?? "",
+                                    detailData?.grades?.studentfile?.asset
+                                      ?.url ?? ""
+                                  ),
+                                  "_blank"
+                                )
+                                ?.focus();
+                            }}
+                          >
+                            <Visibility fontSize={"small"} />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={() => {
+                              if (assignmentRef.current) {
+                                assignmentRef.current.click();
+                              }
+                            }}
+                          >
+                            <Edit fontSize={"small"} />
+                          </IconButton>
+                        </Stack>
+                      </Stack>
+                    </Stack>
+                  </Box>
+
+                  {/* <Button
+                    variant="contained"
+                    sx={{ maxHeight: "2.5em" }}
+                    onClick={() => {
+                      if (assignmentRef.current) assignmentRef.current.click();
+                    }}
+                  >
+                    Edit Tugas
+                  </Button> */}
+                </Stack>
               )}
               <input
                 ref={assignmentRef}
@@ -235,66 +385,70 @@ const AssignmentDetail: React.FC = () => {
             <Typography variant="h6">File Pendukung</Typography>
             <a href={"#"} hidden ref={downloadRef}></a>
             {detailData.fileMaterials?.length > 0 ? (
-              <Stack direction={"row"} spacing={2} overflow={"auto"}>
-                {detailData.fileMaterials.map(
-                  ({ asset }: any, index: number) => {
-                    return (
-                      <Box
-                        border={1}
-                        borderRadius={"8px"}
-                        boxShadow={2}
-                        key={index}
-                      >
+              is_admin ? (
+                <Stack direction={"row"} spacing={2} overflow={"auto"}>
+                  {detailData.fileMaterials.map(
+                    ({ asset }: any, index: number) => {
+                      return (
                         <Box
-                          borderRadius={"8px 8px 0 0"}
-                          minWidth={144}
-                          height={56}
-                          sx={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                            bgcolor: (theme) => theme.palette.secondary.main,
-                          }}
+                          border={1}
+                          borderRadius={"8px"}
+                          boxShadow={2}
+                          key={index}
                         >
-                          <Typography
-                            variant="body2"
-                            fontWeight={700}
-                            textTransform={"uppercase"}
+                          <Box
+                            borderRadius={"8px 8px 0 0"}
+                            minWidth={144}
+                            height={56}
+                            sx={{
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              bgcolor: (theme) => theme.palette.secondary.main,
+                            }}
                           >
-                            {asset.extension}
-                          </Typography>
-                        </Box>
-                        <Stack p={1}>
-                          <Typography variant="caption">
-                            {fileNameEllipsis(asset.originalFilename)}
-                          </Typography>
-                          <Stack
-                            direction={"row"}
-                            alignItems={"center"}
-                            justifyContent={"space-between"}
-                          >
-                            <Typography variant="caption">
-                              {formatBytes(asset.size)}
-                            </Typography>
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => {
-                                if (downloadRef.current) {
-                                  downloadRef.current.href = `${asset.url}?dl=`;
-                                  downloadRef.current.click();
-                                }
-                              }}
+                            <Typography
+                              variant="body2"
+                              fontWeight={700}
+                              textTransform={"uppercase"}
                             >
-                              <Download fontSize={"small"} />
-                            </IconButton>
+                              {asset.extension}
+                            </Typography>
+                          </Box>
+                          <Stack p={1}>
+                            <Typography variant="caption">
+                              {fileNameEllipsis(asset.originalFilename)}
+                            </Typography>
+                            <Stack
+                              direction={"row"}
+                              alignItems={"center"}
+                              justifyContent={"space-between"}
+                            >
+                              <Typography variant="caption">
+                                {formatBytes(asset.size)}
+                              </Typography>
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => {
+                                  if (downloadRef.current) {
+                                    downloadRef.current.href = `${asset.url}?dl=`;
+                                    downloadRef.current.click();
+                                  }
+                                }}
+                              >
+                                <Download fontSize={"small"} />
+                              </IconButton>
+                            </Stack>
                           </Stack>
-                        </Stack>
-                      </Box>
-                    );
-                  }
-                )}
-              </Stack>
+                        </Box>
+                      );
+                    }
+                  )}
+                </Stack>
+              ) : (
+                <SwiperComponent dataToDisplay={detailData.fileMaterials} />
+              )
             ) : (
               <Stack justifyContent="center" alignItems="center" py={4}>
                 <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
@@ -307,38 +461,27 @@ const AssignmentDetail: React.FC = () => {
           <Divider role="presentation">
             <Circle fontSize="inherit" color="primary" />
           </Divider>
-          <Box py={2}>
-            <Typography variant="h6" pb={1}>
-              Module
-            </Typography>
-            {module ? (
-              <Grid
-                container
-                py={1}
-                direction={{ xs: "column", md: "row" }}
-                rowSpacing={2}
-                columnSpacing={{ xs: 0, md: 2 }}
-              >
-                <Grid item xs={12} md={3}>
-                  <ModuleCard
-                    coverImage={module.coverImage?.asset?._ref}
-                    description={module.description}
-                    id={module._id}
-                    title={module.title}
-                  />
-                </Grid>
-              </Grid>
-            ) : (
-              <Stack justifyContent="center" alignItems="center" py={4}>
-                <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
-                <Typography textAlign="center" variant="body1">
-                  Tidak ada Module
-                </Typography>
-              </Stack>
-            )}
-          </Box>
         </Box>
       </Container>
+      <AssignmentFormModal
+        isEdit={true}
+        dataToEdit={detailData}
+        open={openForm}
+        onClose={() => {
+          location.reload();
+          setOpenForm(false);
+        }}
+      />
+      {params.id ? (
+        <AssignmentGrading
+          documentId={params.id}
+          open={openGrading}
+          onClose={() => {
+            setOpenGrading(false);
+          }}
+          grades={detailData.grades}
+        />
+      ) : null}
     </Box>
   ) : null;
 };
