@@ -119,11 +119,11 @@ const LoginComponent: React.FC = () => {
           Masuk
         </Button>
         <Grid container sx={{ mb: 1.5 }} justifyContent={"space-between"}>
-          <Grid item>
+          {/* <Grid item>
             <Link component={RouterLink} to="/forgot-password" variant="body2">
               Lupa Password
             </Link>
-          </Grid>
+          </Grid> */}
           <Grid item>
             <Link component={RouterLink} to="/register" variant="body2">
               Belum punya akun? silahkan daftar

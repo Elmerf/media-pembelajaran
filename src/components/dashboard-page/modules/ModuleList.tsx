@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import SkeletonCard from "../commons/SkeletonCard";
-import { useContext, useEffect, useState } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import ModuleCard from "./ModuleCard";
 import { useNavigate } from "react-router-dom";
 import { client } from "../../../lib/sanity-client";
@@ -30,17 +30,17 @@ const ModuleList: React.FC = () => {
     setOpenModule(true);
   };
 
+  const fetchAsync = useCallback(async () => {
+    setLoading(true);
+    const dataModule = await client.fetch(
+      "*[_type == 'module'] | order(_updatedAt desc)"
+    );
+
+    setModules(dataModule);
+    setLoading(false);
+  }, []);
+
   useEffect(() => {
-    const fetchAsync = async () => {
-      setLoading(true);
-      const dataModule = await client.fetch(
-        "*[_type == 'module'] | order(_updatedAt desc)"
-      );
-
-      setModules(dataModule);
-      setLoading(false);
-    };
-
     fetchAsync();
 
     // const subModules = client
@@ -53,7 +53,7 @@ const ModuleList: React.FC = () => {
     // return () => {
     //   subModules.unsubscribe();
     // };
-  }, []);
+  }, [fetchAsync]);
 
   return (
     <Box px={4}>
@@ -123,6 +123,7 @@ const ModuleList: React.FC = () => {
         open={openModule}
         onClose={() => {
           setOpenModule(false);
+          fetchAsync();
         }}
       />
     </Box>

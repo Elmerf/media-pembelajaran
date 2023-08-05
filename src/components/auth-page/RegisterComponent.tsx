@@ -8,9 +8,39 @@ import {
   Typography,
 } from "@mui/material";
 import { LockOutlined, PermContactCalendar } from "@mui/icons-material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { hashSync } from "bcrypt-ts/browser";
+import { client } from "../../lib/sanity-client";
 
 const RegisterComponent: React.FC = () => {
+  const navigate = useNavigate();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPasword, setconfirmPasword] = useState("");
+
+  const handleSubmit = async () => {
+    if (password !== confirmPasword) return alert("Password tidak sama");
+
+    try {
+      const data = {
+        _type: "user",
+        name: name,
+        username: email,
+        email: email,
+        password: hashSync(password),
+        is_admin: false,
+      };
+
+      await client.create(data);
+      alert("Akun berhasil dibuat");
+      navigate("/login");
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <Box
       boxShadow={4}
@@ -37,11 +67,24 @@ const RegisterComponent: React.FC = () => {
           margin="normal"
           required
           fullWidth
+          id="name"
+          label="Name"
+          name="name"
+          autoComplete="name"
+          autoFocus
+          onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          margin="normal"
+          required
+          fullWidth
           id="email"
           label="Email Address"
           name="email"
           autoComplete="email"
           autoFocus
+          type="email"
+          onChange={(e) => setEmail(e.target.value)}
         />
         <TextField
           margin="normal"
@@ -52,6 +95,7 @@ const RegisterComponent: React.FC = () => {
           type="password"
           id="password"
           autoComplete="current-password"
+          onChange={(e) => setPassword(e.target.value)}
         />
         <TextField
           margin="normal"
@@ -61,8 +105,14 @@ const RegisterComponent: React.FC = () => {
           label="Confirm Password"
           type="password"
           id="confirm-password"
+          onChange={(e) => setconfirmPasword(e.target.value)}
         />
-        <Button fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+        <Button
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+          onClick={handleSubmit}
+        >
           Daftar
         </Button>
         <Grid container sx={{ mb: 1.5 }} justifyContent="end">
