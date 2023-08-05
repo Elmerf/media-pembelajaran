@@ -1,5 +1,6 @@
 import {
   Circle,
+  Delete,
   Download,
   Edit,
   ReportProblem,
@@ -14,9 +15,9 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import assignmentImage from "../../../assets/assignment-image.jpg";
 import fileNameEllipsis from "../../../helpers/filename-ellipsis";
 import formatBytes from "../../../helpers/format-bytes";
@@ -29,6 +30,7 @@ import AssignmentGrading from "./AssignmentGrading";
 
 const AssignmentDetail: React.FC = () => {
   const params = useParams();
+  const navigate = useNavigate();
 
   const {
     session: { is_admin, _id },
@@ -94,101 +96,86 @@ const AssignmentDetail: React.FC = () => {
     }
   };
 
-  useEffect(() => {
+  const handleDelete = async () => {
     const id = params.id;
 
-    const fetchDetail = async () => {
+    if (confirm("Anda akan menghapus assignment, lanjutkan?")) {
       try {
-        showLoader(true);
-        setLoaderMsg("Fetching Assignment Detail...");
-
-        if (_id) {
-          const data = await client.fetch(
-            `*[_type == 'assignment' && _id == $_id]{
-            ...,
-            fileMaterials[] {
-              asset->{
-                _id,
-                url,
-                originalFilename,
-                size,
-                extension,
-              }
-            },
-            ${
-              !is_admin
-                ? `grades[student._ref == $student_id] {
-              ...,
-              studentfile {
-                asset->
-              },
-              _key,
-            }[0],`
-                : `grades[]{
-                  ...,
-                  student->{
-                    name
-                  },
-                    studentfile {
-                    ...,
-                    asset->
-                    }
-                }`
-            } 
-          }[0]`,
-            { _id: id, student_id: _id }
-          );
-
-          setDetailData(data);
+        if (id) {
+          await client.delete(id);
+          navigate(-1);
         }
-      } catch (e) {
-        console.log(e);
-      } finally {
-        showLoader(false);
+      } catch (error) {
+        console.error(error);
       }
-    };
+    }
+  };
 
+  const fetchDetail = useCallback(async () => {
+    const id = params.id;
+    try {
+      showLoader(true);
+      setLoaderMsg("Fetching Assignment Detail...");
+
+      if (_id) {
+        const data = await client.fetch(
+          `*[_type == 'assignment' && _id == $_id]{
+          ...,
+          fileMaterials[] {
+            asset->{
+              _id,
+              url,
+              originalFilename,
+              size,
+              extension,
+            }
+          },
+          ${
+            !is_admin
+              ? `grades[student._ref == $student_id] {
+            ...,
+            studentfile {
+              asset->
+            },
+            _key,
+          }[0],`
+              : `grades[]{
+                ...,
+                student->{
+                  name
+                },
+                  studentfile {
+                  ...,
+                  asset->
+                  }
+              }`
+          } 
+        }[0]`,
+          { _id: id, student_id: _id }
+        );
+
+        setDetailData(data);
+      }
+    } catch (e) {
+      console.log(e);
+    } finally {
+      showLoader(false);
+    }
+  }, [_id, is_admin, params.id, setLoaderMsg, showLoader]);
+
+  useEffect(() => {
     if (!detailData) {
       fetchDetail();
     }
-
-    // const detailSubscribe = client
-    //   .listen(
-    //     `*[_type == 'assignment' && _id == $_id]{
-    //   ...,
-    //   fileMaterials[] {
-    //     asset->{
-    //       _id,
-    //       url,
-    //       originalFilename,
-    //       size,
-    //       extension,
-    //     }
-    //   },
-    //   ${
-    //     !is_admin
-    //       ? `grades[student._ref == $student_id] {
-    //     student,
-    //     studentfile {
-    //       asset->
-    //     },
-    //     _key,
-    //   }[0],`
-    //       : ""
-    //   }
-    // }[0]`,
-    //     { _id: id, student_id: _id }
-    //   )
-    //   .subscribe((newData) => {
-    //     const updatedData = newData.result;
-
-    //     setDetailData(updatedData);
-    //   });
-
-    // return () => {
-    //   detailSubscribe;
-    // };
-  }, [_id, detailData, is_admin, params.id, setLoaderMsg, showLoader]);
+  }, [
+    _id,
+    detailData,
+    fetchDetail,
+    is_admin,
+    params.id,
+    setLoaderMsg,
+    showLoader,
+  ]);
 
   return detailData ? (
     <Box px={4} pb={2}>
@@ -204,9 +191,18 @@ const AssignmentDetail: React.FC = () => {
               {detailData.title}
             </Typography>
             {is_admin ? (
-              <IconButton size="small" onClick={() => setOpenForm(true)}>
-                <Edit />
-              </IconButton>
+              <Stack direction={"row"} spacing={2}>
+                <IconButton size="small" onClick={() => handleDelete()}>
+                  <Delete />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={() => setOpenForm(true)}
+                >
+                  <Edit />
+                </IconButton>
+              </Stack>
             ) : null}
           </Stack>
           <img

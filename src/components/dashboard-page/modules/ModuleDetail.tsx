@@ -1,6 +1,7 @@
 import {
   Add,
   Circle,
+  Delete,
   Download,
   Edit,
   ReportProblem,
@@ -16,11 +17,11 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 import moduleImage from "../../../assets/module-image.jpg";
 import AssignmentCard from "../assignment/AssignmentCard";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { client } from "../../../lib/sanity-client";
 import { DashboardContext } from "../../../layouts/DashboardLayout";
 import formatBytes from "../../../helpers/format-bytes";
@@ -31,6 +32,7 @@ import SwiperComponent from "../commons/SwiperComponent";
 
 const ModuleDetail: React.FC = () => {
   const params = useParams();
+  const navigate = useNavigate();
 
   const {
     session: { is_admin },
@@ -44,72 +46,59 @@ const ModuleDetail: React.FC = () => {
 
   const [openForm, setOpenForm] = useState(false);
 
-  useEffect(() => {
+  const handleDelete = async () => {
     const id = params.id;
 
-    const fetchDetail = async () => {
+    if (confirm("Anda akan menghapus modul, lanjutkan?")) {
       try {
-        showLoader(true);
-        setLoaderMsg("Fetching Module Detail...");
-
-        const data = await client.fetch(
-          `*[_type == 'module' && _id == $_id]{
-          ...,
-          teacher->{
-            name
-          },
-          fileMaterial[] {
-            asset->{
-              _id,
-              url,
-              originalFilename,
-              size,
-              extension,
-            }
-          },
-        }[0]`,
-          { _id: id }
-        );
-
-        setDetailData(data);
-      } catch (e) {
-        console.log(e);
-      } finally {
-        showLoader(false);
+        if (id) {
+          await client.delete(id);
+          navigate(-1);
+        }
+      } catch (error) {
+        console.error(error);
       }
-    };
+    }
+  };
 
+  const fetchDetail = useCallback(async () => {
+    const id = params.id;
+    try {
+      showLoader(true);
+      setLoaderMsg("Fetching Module Detail...");
+
+      const data = await client.fetch(
+        `*[_type == 'module' && _id == $_id]{
+        ...,
+        teacher->{
+          name
+        },
+        fileMaterial[] {
+          asset->{
+            _id,
+            url,
+            originalFilename,
+            size,
+            extension,
+          }
+        },
+      }[0]`,
+        { _id: id }
+      );
+
+      setDetailData(data);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      showLoader(false);
+    }
+  }, [params.id, setLoaderMsg, showLoader]);
+
+  useEffect(() => {
     if (!detailData) {
       fetchDetail();
     }
-
-    const subscribeDetail = client
-      .listen(
-        `*[_type == 'module' && _id == $_id]{
-      ...,
-      teacher->{
-        name
-      },
-      fileMaterial[] {
-        asset->{
-          _id,
-          url,
-          originalFilename,
-          size,
-          extension,
-        }
-      },
-    }[0]`,
-        { _id: id }
-      )
-      .subscribe(({ result }) => {
-        setDetailData(result);
-      });
-
-    return () => {
-      subscribeDetail.unsubscribe();
-    };
-  }, [detailData, params.id, setLoaderMsg, showLoader]);
+  }, [detailData, fetchDetail, params.id, setLoaderMsg, showLoader]);
 
   return detailData ? (
     <Box px={4} pb={2}>
@@ -125,9 +114,18 @@ const ModuleDetail: React.FC = () => {
               {detailData.title}
             </Typography>
             {is_admin ? (
-              <IconButton size="small" onClick={() => setOpenForm(true)}>
-                <Edit />
-              </IconButton>
+              <Stack direction={"row"} spacing={2}>
+                <IconButton size="small" onClick={() => handleDelete()}>
+                  <Delete />
+                </IconButton>
+                <IconButton
+                  size="small"
+                  color="primary"
+                  onClick={() => setOpenForm(true)}
+                >
+                  <Edit />
+                </IconButton>
+              </Stack>
             ) : null}
           </Stack>
           <img

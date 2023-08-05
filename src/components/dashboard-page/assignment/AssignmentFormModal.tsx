@@ -319,7 +319,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModal> = (props) => {
                   sx={{ ".MuiInputBase-input": { padding: "8.5px 14px" } }}
                   value={deadline}
                   onChange={(e: any) => {
-                    if (e) setDeadline(e.toISOString());
+                    if (e) setDeadline(e);
                   }}
                 />
               </Grid>
