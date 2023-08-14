@@ -15,7 +15,7 @@ import { DashboardContext } from "../../../layouts/DashboardLayout";
 import { client } from "../../../lib/sanity-client";
 import "./Sample.css";
 
-const SilabusPage: React.FC = () => {
+const PedomanPage: React.FC = () => {
   const {
     session: { is_admin },
     showLoader,
@@ -23,10 +23,10 @@ const SilabusPage: React.FC = () => {
   } = useContext(DashboardContext);
 
   const inputRef = useRef<HTMLInputElement>(null);
-  const [silabus, setSilabus] = useState<any>();
+  const [pedoman, setPedoman] = useState<any>();
   const [loading, setLoading] = useState(false);
 
-  const handleEditSilabus = () => {
+  const handleEditPedoman = () => {
     if (inputRef.current) {
       inputRef.current.click();
     }
@@ -38,50 +38,64 @@ const SilabusPage: React.FC = () => {
     if (e.target.files) {
       const data = e.target.files[0];
 
-      const documentResponse = await client.assets.upload("file", data);
+      try {
+        setLoading(true);
+        showLoader(true);
+        setLoaderMsg("Uploading, please wait...");
 
-      const silabusData = {
-        _id: "silabus-file-pdf",
-        _type: "silabus",
-        silabusFile: {
-          _type: "file",
-          asset: {
-            _type: "reference",
-            _ref: documentResponse._id,
+        const documentResponse = await client.assets.upload("file", data);
+
+        const pedomanData = {
+          _id: "pedoman-file-pdf",
+          _type: "pedoman",
+          pedomanFile: {
+            _type: "file",
+            asset: {
+              _type: "reference",
+              _ref: documentResponse._id,
+            },
           },
-        },
-      };
-      const edit = await client.createOrReplace(silabusData);
+        };
 
-      if (edit) {
-        location.reload();
+        const edit = await client.createOrReplace(pedomanData);
+
+        if (edit) {
+          location.reload();
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        showLoader(false);
       }
     }
   };
 
   useEffect(() => {
-    if (!silabus) {
+    if (pedoman === undefined) {
       setLoading(true);
       showLoader(true);
-      setLoaderMsg("Loading Silabus...");
+      setLoaderMsg("Loading Pedoman...");
       client
         .fetch(
-          `*[_type == 'silabus']{
-              silabusFile {
+          `*[_type == 'pedoman']{
+              pedomanFile {
                 asset->{url}
               }
             }[0]
           `
         )
         .then((data) => {
-          setSilabus(data);
+          console.log(data);
+          setPedoman(data);
         })
+        .catch((err) => console.log(err))
         .finally(() => {
           setLoading(false);
           showLoader(false);
         });
     }
-  }, [setLoaderMsg, showLoader, silabus]);
+  }, [setLoaderMsg, showLoader, pedoman]);
 
   return (
     <Box px={4}>
@@ -100,18 +114,18 @@ const SilabusPage: React.FC = () => {
             direction="row"
           >
             <Typography variant="h6" fontWeight="bold" pt={1}>
-              Silabus
+              Pedoman Penggunaan Aplikasi
             </Typography>
             {is_admin ? (
-              <IconButton size="small" onClick={() => handleEditSilabus()}>
+              <IconButton size="small" onClick={() => handleEditPedoman()}>
                 <Edit />
               </IconButton>
             ) : null}
           </Stack>
           {/* EMPTY STATE */}
-          {silabus ? (
+          {pedoman ? (
             <iframe
-              src={`${silabus?.silabusFile?.asset?.url as string}#view-fit`}
+              src={`${pedoman?.pedomanFile?.asset?.url as string}#view-fit`}
               width={"100%"}
               style={{ marginBlock: "1em", minHeight: "36em", border: 0 }}
             />
@@ -119,7 +133,7 @@ const SilabusPage: React.FC = () => {
             <Stack justifyContent="center" alignItems="center" py={4}>
               <ReportProblem color="primary" sx={{ fontSize: "4em" }} />
               <Typography textAlign="center" variant="body1">
-                Tidak ada Silabus
+                Tidak ada Pedoman
               </Typography>
             </Stack>
           ) : null}
@@ -129,4 +143,4 @@ const SilabusPage: React.FC = () => {
   );
 };
 
-export default SilabusPage;
+export default PedomanPage;

@@ -85,6 +85,14 @@ const DashboardBar: React.FC = () => {
                 underline="none"
                 color={(theme) => theme.palette.secondary.main}
                 component={RouteLink}
+                to={"pedoman"}
+              >
+                Pedoman
+              </Link>
+              <Link
+                underline="none"
+                color={(theme) => theme.palette.secondary.main}
+                component={RouteLink}
                 to={"silabus"}
               >
                 Silabus
