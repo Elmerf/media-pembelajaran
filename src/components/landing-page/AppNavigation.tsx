@@ -1,20 +1,15 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { MenuOutlined } from "@mui/icons-material";
 import {
   AppBar,
   Box,
   Button,
   Container,
-  Drawer,
-  IconButton,
   Link,
-  List,
-  ListItem,
   Stack,
   Toolbar,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AppHero from "./AppHero";
 
 const AppNavigation: React.FC = () => {
@@ -160,6 +155,9 @@ const AppNavigation: React.FC = () => {
                 alignItems="center"
                 fontWeight="bold"
               >
+                <Link href="#pedoman">
+                  <Typography color={"white"}>Pedoman</Typography>
+                </Link>
                 <Button
                   variant="contained"
                   size="small"

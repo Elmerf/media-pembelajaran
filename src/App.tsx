@@ -19,6 +19,7 @@ import SilabusPage from "./components/dashboard-page/silabus/SilabusPage";
 import AssignmentList from "./components/dashboard-page/assignment/AssignmentList";
 import ModuleDetail from "./components/dashboard-page/modules/ModuleDetail";
 import AssignmentDetail from "./components/dashboard-page/assignment/AssignmentDetail";
+import PedomanPage from "./components/dashboard-page/pedoman/PedomanPage";
 
 const theme = createTheme({
   palette: {
@@ -95,6 +96,10 @@ const router = createBrowserRouter([
       {
         path: "silabus",
         element: <SilabusPage />,
+      },
+      {
+        path: "pedoman",
+        element: <PedomanPage />,
       },
     ],
   },

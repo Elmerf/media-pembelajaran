@@ -49,6 +49,9 @@ const AssignmentDetail: React.FC = () => {
     HTMLInputElement
   > = async (e) => {
     if (e.target.files) {
+      if (e.target.files?.length > 2)
+        return alert("Maksimal File yang diupload adalah 2 file");
+
       const data = e.target.files[0];
 
       showLoader(true);
@@ -107,6 +110,23 @@ const AssignmentDetail: React.FC = () => {
         }
       } catch (error) {
         console.error(error);
+      }
+    }
+  };
+
+  const handleDeleteAnswer = async () => {
+    if (confirm("Anda akan menghapus jawaban, lanjutkan?")) {
+      try {
+        showLoader(true);
+        setLoaderMsg("Deleting Assignment...");
+
+        const dataPatch = await client
+          .patch(detailData._id)
+          .unset([`grades[_key=="${detailData?.grades?._key}"]`])
+          .commit({ autoGenerateArrayKeys: true });
+      } finally {
+        showLoader(false);
+        location.reload();
       }
     }
   };
@@ -345,6 +365,13 @@ const AssignmentDetail: React.FC = () => {
                           >
                             <Edit fontSize={"small"} />
                           </IconButton>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            onClick={handleDeleteAnswer}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
                         </Stack>
                       </Stack>
                     </Stack>
@@ -365,6 +392,7 @@ const AssignmentDetail: React.FC = () => {
                 ref={assignmentRef}
                 type="file"
                 hidden
+                multiple
                 onChange={handleSubmitAssignment}
               />
             </Stack>

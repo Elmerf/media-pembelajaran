@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import tentangIlustration from "../../assets/tentang-ilustration.jpg";
 import { Circle } from "@mui/icons-material";
+import PedomanPage from "../dashboard-page/pedoman/PedomanPage";
 
 const AppContent: React.FC = () => {
   const theme = useTheme();
@@ -79,6 +80,9 @@ const AppContent: React.FC = () => {
             borderColor: theme.palette.primary.contrastText,
           })}
         /> */}
+      </Box>
+      <Box id="pedoman" pb={4}>
+        <PedomanPage />
       </Box>
     </Container>
   );
