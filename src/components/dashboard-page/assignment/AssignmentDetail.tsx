@@ -88,6 +88,26 @@ const AssignmentDetail: React.FC = () => {
 
           console.log("PATCHED", dataPatch);
         }
+
+        if (!detailData?.grades) {
+          const dataPatch = await client
+            .patch(detailData._id)
+            .setIfMissing({ grades: [] })
+            .append(`grades`, [
+              {
+                student: { _type: "reference", _ref: _id },
+                studentfile: [
+                  {
+                    _type: "file",
+                    asset: { _type: "reference", _ref: documentRes._id },
+                  },
+                ],
+              },
+            ])
+            .commit({ autoGenerateArrayKeys: true });
+
+          console.log("PATCHED", dataPatch);
+        }
       }
 
       // if (data && !detailData?.grades?.studentfile?.asset?._updatedAt) {
@@ -305,7 +325,8 @@ const AssignmentDetail: React.FC = () => {
                     : "N/A"}
                 </Typography>
               </Stack>
-              {detailData?.grades?.studentfile?.length === 0 ? (
+              {!detailData?.grades ||
+              detailData?.grades?.studentfile?.length === 0 ? (
                 <Button
                   variant="contained"
                   sx={{ maxHeight: "2.5em" }}
@@ -436,9 +457,12 @@ const AssignmentDetail: React.FC = () => {
                 ref={assignmentRef}
                 type="file"
                 hidden
-                multiple={
-                  detailData?.grades?.studentfile?.length === 0 ? true : false
-                }
+                // multiple={
+                //   !detailData?.grades ||
+                //   detailData?.grades?.studentfile?.length === 0
+                //     ? true
+                //     : false
+                // }
                 onChange={handleSubmitAssignment}
               />
             </Stack>
