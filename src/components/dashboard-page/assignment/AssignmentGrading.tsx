@@ -35,7 +35,7 @@ const AssignmentGrading: React.FC<AssignmentGrading> = (props) => {
       .set({ [`grades[_key == "${key}"].grade`]: e.target.value })
       .commit();
 
-    console.log(data);
+    // console.log(data);
   };
 
   return (
@@ -66,7 +66,7 @@ const AssignmentGrading: React.FC<AssignmentGrading> = (props) => {
                       <TableCell>{grade?.student?.name}</TableCell>
                       <TableCell>
                         {new Date(
-                          grade?.studentfile?.asset?._updatedAt
+                          grade?.studentfile[0]?.asset?._updatedAt
                         ).toLocaleString()}
                       </TableCell>
                       <TableCell>
@@ -75,19 +75,26 @@ const AssignmentGrading: React.FC<AssignmentGrading> = (props) => {
                           spacing={1}
                           alignItems={"center"}
                         >
-                          <Button
-                            variant="contained"
-                            onClick={() => {
-                              window.open(
-                                handleSource(
-                                  grade?.studentfile?.asset?.extension,
-                                  grade?.studentfile?.asset?.url
-                                )
+                          {grade?.studentfile?.map(
+                            (file: any, index: number) => {
+                              return (
+                                <Button
+                                  variant="contained"
+                                  onClick={() => {
+                                    window.open(
+                                      handleSource(
+                                        file.asset?.extension,
+                                        file.asset?.url
+                                      )
+                                    );
+                                  }}
+                                  key={index}
+                                >
+                                  Lihat Jawaban {index + 1}
+                                </Button>
                               );
-                            }}
-                          >
-                            Lihat Jawaban
-                          </Button>
+                            }
+                          )}
                           {/* <Button
                             variant="contained"
                             onClick={() => {

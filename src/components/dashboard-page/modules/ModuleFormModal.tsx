@@ -80,7 +80,7 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
           uniqueFileNames[file.name] = file;
         });
 
-        console.log(uniqueFileNames);
+        // console.log(uniqueFileNames);
 
         // Convert the object back to an array of unique files
         const uniqueFiles = Object.values(uniqueFileNames);
@@ -168,13 +168,13 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
           .set(data)
           .commit();
 
-        console.log(response);
+        // console.log(response);
       } else {
         setLoaderMsg("Creating module...");
         const response = await client.create(data, {
           autoGenerateArrayKeys: true,
         });
-        console.log(response);
+        // console.log(response);
       }
 
       if (props.onClose) props.onClose();
@@ -191,7 +191,7 @@ const ModuleFormModal: React.FC<ModuleFormModal> = (props) => {
 
   useEffect(() => {
     if (props.isEdit) {
-      console.log(props.dataToEdit);
+      // console.log(props.dataToEdit);
       const { title, goal, description, coverImage } = props.dataToEdit;
 
       setTitle(title);

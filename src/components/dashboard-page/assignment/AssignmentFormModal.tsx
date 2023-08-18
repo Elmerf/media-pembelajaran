@@ -82,7 +82,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModal> = (props) => {
           uniqueFileNames[file.name] = file;
         });
 
-        console.log(uniqueFileNames);
+        // console.log(uniqueFileNames);
 
         // Convert the object back to an array of unique files
         const uniqueFiles = Object.values(uniqueFileNames);
@@ -164,13 +164,13 @@ const AssignmentFormModal: React.FC<AssignmentFormModal> = (props) => {
           .set(data)
           .commit();
 
-        console.log(response);
+        // console.log(response);
       } else {
         setLoaderMsg("Creating Assignment...");
         const response = await client.create(data, {
           autoGenerateArrayKeys: true,
         });
-        console.log(response);
+        // console.log(response);
       }
 
       if (props.onClose) props.onClose();
@@ -187,7 +187,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModal> = (props) => {
 
   useEffect(() => {
     if (props.isEdit) {
-      console.log(props.dataToEdit);
+      // console.log(props.dataToEdit);
       const { title, deadline, description, coverImage } = props.dataToEdit;
 
       setTitle(title);

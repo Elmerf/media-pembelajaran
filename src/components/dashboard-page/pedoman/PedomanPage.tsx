@@ -86,7 +86,7 @@ const PedomanPage: React.FC = () => {
           `
         )
         .then((data) => {
-          console.log(data);
+          // console.log(data);
           setPedoman(data);
         })
         .catch((err) => console.log(err))
