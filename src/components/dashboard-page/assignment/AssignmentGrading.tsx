@@ -35,7 +35,7 @@ const AssignmentGrading: React.FC<AssignmentGrading> = (props) => {
       .set({ [`grades[_key == "${key}"].grade`]: e.target.value })
       .commit();
 
-    console.log(data);
+    // console.log(data);
   };
 
   return (
@@ -75,7 +75,6 @@ const AssignmentGrading: React.FC<AssignmentGrading> = (props) => {
                           spacing={1}
                           alignItems={"center"}
                         >
-                          {console.log("student file", grade.studentfile)}
                           {grade?.studentfile?.map(
                             (file: any, index: number) => {
                               return (

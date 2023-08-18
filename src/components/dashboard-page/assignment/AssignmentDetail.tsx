@@ -264,11 +264,9 @@ const AssignmentDetail: React.FC = () => {
                 </Typography>
                 <Typography variant="caption">
                   Siswa dinilai:{" "}
-                  {detailData?.grades?.filter(
-                    (grade: any) =>
-                      typeof grade === "object" &&
-                      !Object.prototype.hasOwnProperty.call(grade, "grade")
-                  ).length ?? "0"}
+                  {detailData?.grades?.filter((grade: any) => {
+                    return grade?.grade;
+                  }).length ?? "0"}
                   /{detailData?.grades?.length ?? "0"}
                 </Typography>
                 <Typography variant="caption">
