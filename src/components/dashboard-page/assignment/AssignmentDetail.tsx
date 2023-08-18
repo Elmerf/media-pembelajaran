@@ -45,6 +45,8 @@ const AssignmentDetail: React.FC = () => {
   const [openForm, setOpenForm] = useState(false);
   const [openGrading, setOpenGrading] = useState(false);
 
+  const [studentFileKey, setFileKey] = useState("");
+
   const handleSubmitAssignment: React.ChangeEventHandler<
     HTMLInputElement
   > = async (e) => {
@@ -57,43 +59,56 @@ const AssignmentDetail: React.FC = () => {
       showLoader(true);
       setLoaderMsg("Uploading Assignment...");
 
-      if (data && detailData?.grades?.studentfile?.asset?._updatedAt) {
+      if (data) {
         const documentRes = await client.assets.upload("file", data);
 
-        const dataPatch = await client
-          .patch(detailData._id)
-          .unset([`grades[_key=="${detailData?.grades?._key}"]`])
-          .append("grades", [
-            {
-              student: { _type: "reference", _ref: _id },
-              studentfile: {
+        if (studentFileKey) {
+          const dataPatch = await client
+            .patch(detailData._id)
+            .unset([
+              `grades[_key=="${detailData?.grades?._key}"].studentfile[_key=="${studentFileKey}"]`,
+            ])
+            .append(`grades[_key=="${detailData?.grades?._key}"].studentfile`, [
+              {
                 _type: "file",
                 asset: { _type: "reference", _ref: documentRes._id },
               },
-            },
-          ])
-          .commit({ autoGenerateArrayKeys: true });
-      }
-
-      if (data && !detailData?.grades?.studentfile?.asset?._updatedAt) {
-        const documentRes = await client.assets.upload("file", data);
-
-        const dataPatch = await client
-          .patch(detailData._id)
-          .setIfMissing({ grades: [] })
-          .append("grades", [
-            {
-              student: { _type: "reference", _ref: _id },
-              studentfile: {
+            ])
+            .commit({ autoGenerateArrayKeys: true });
+        } else {
+          const dataPatch = await client
+            .patch(detailData._id)
+            .append(`grades[_key=="${detailData?.grades?._key}"].studentfile`, [
+              {
                 _type: "file",
                 asset: { _type: "reference", _ref: documentRes._id },
               },
-            },
-          ])
-          .commit({ autoGenerateArrayKeys: true });
+            ])
+            .commit({ autoGenerateArrayKeys: true });
 
-        console.log(dataPatch);
+          console.log("PATCHED", dataPatch);
+        }
       }
+
+      // if (data && !detailData?.grades?.studentfile?.asset?._updatedAt) {
+      //   const documentRes = await client.assets.upload("file", data);
+
+      //   const dataPatch = await client
+      //     .patch(detailData._id)
+      //     .append("grades", [
+      //       {
+      //         student: { _type: "reference", _ref: _id },
+      //         studentfile: {
+      //           _type: "file",
+      //           asset: { _type: "reference", _ref: documentRes._id },
+      //         },
+      //       },
+      //     ])
+      //     .commit({ autoGenerateArrayKeys: true });
+
+      //   console.log(dataPatch);
+      // }
+      setFileKey("");
       showLoader(false);
       location.reload();
     }
@@ -114,7 +129,8 @@ const AssignmentDetail: React.FC = () => {
     }
   };
 
-  const handleDeleteAnswer = async () => {
+  const handleDeleteAnswer = async (fileKey: string) => {
+    console.log("FILEKEY", fileKey);
     if (confirm("Anda akan menghapus jawaban, lanjutkan?")) {
       try {
         showLoader(true);
@@ -122,7 +138,9 @@ const AssignmentDetail: React.FC = () => {
 
         const dataPatch = await client
           .patch(detailData._id)
-          .unset([`grades[_key=="${detailData?.grades?._key}"]`])
+          .unset([
+            `grades[_key=="${detailData?.grades?._key}"].studentfile[_key=="${fileKey}"]`,
+          ])
           .commit({ autoGenerateArrayKeys: true });
       } finally {
         showLoader(false);
@@ -154,19 +172,23 @@ const AssignmentDetail: React.FC = () => {
             !is_admin
               ? `grades[student._ref == $student_id] {
             ...,
-            studentfile {
-              asset->
-            },
-            _key,
+            studentfile[]{
+              ...,
+              asset->{
+                ...
+              }
+            }
           }[0],`
               : `grades[]{
                 ...,
                 student->{
                   name
                 },
-                  studentfile {
+                  studentfile[]{
                   ...,
-                  asset->
+                  asset->{
+                    ...
+                  }
                   }
               }`
           } 
@@ -272,9 +294,9 @@ const AssignmentDetail: React.FC = () => {
                 </Typography>
                 <Typography variant="caption">
                   Dikumpulkan pada:{" "}
-                  {detailData?.grades?.studentfile?.asset?._updatedAt
+                  {detailData?.grades?.studentfile?.length > 0
                     ? new Date(
-                        detailData?.grades?.studentfile?.asset?._updatedAt
+                        detailData?.grades?.studentfile[0].asset?._updatedAt
                       ).toLocaleString("id")
                     : "Belum Mengumpulkan"}
                 </Typography>
@@ -285,7 +307,7 @@ const AssignmentDetail: React.FC = () => {
                     : "N/A"}
                 </Typography>
               </Stack>
-              {!detailData?.grades?.studentfile?.asset?._updatedAt ? (
+              {detailData?.grades?.studentfile?.length === 0 ? (
                 <Button
                   variant="contained"
                   sx={{ maxHeight: "2.5em" }}
@@ -296,103 +318,129 @@ const AssignmentDetail: React.FC = () => {
                   Kumpulkan Tugas
                 </Button>
               ) : (
-                <Stack spacing={1} direction={"row"} alignItems={"center"}>
-                  <Box border={1} borderRadius={"8px"} boxShadow={2}>
-                    <Box
-                      borderRadius={"8px 8px 0 0"}
-                      minWidth={178}
-                      height={56}
-                      sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        bgcolor: (theme) => theme.palette.secondary.main,
+                <Stack direction={"row"} spacing={1} alignItems={"center"}>
+                  {detailData?.grades?.studentfile?.map(
+                    (dataStudent: any, index: number) => {
+                      return (
+                        <Stack
+                          spacing={1}
+                          direction={"row"}
+                          alignItems={"center"}
+                          key={index}
+                        >
+                          <Box border={1} borderRadius={"8px"} boxShadow={2}>
+                            <Box
+                              borderRadius={"8px 8px 0 0"}
+                              minWidth={178}
+                              height={56}
+                              sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                bgcolor: (theme) =>
+                                  theme.palette.secondary.main,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                fontWeight={700}
+                                textTransform={"uppercase"}
+                              >
+                                {dataStudent.asset?.extension}
+                              </Typography>
+                            </Box>
+                            <Stack p={1}>
+                              <Typography variant="caption">
+                                {fileNameEllipsis(
+                                  dataStudent.asset?.originalFilename ?? ""
+                                )}
+                              </Typography>
+                              <Stack
+                                direction={"row"}
+                                alignItems={"center"}
+                                justifyContent={"space-between"}
+                              >
+                                <Typography variant="caption">
+                                  {formatBytes(dataStudent.asset?.size)}
+                                </Typography>
+                                <Stack direction={"row"} alignItems={"center"}>
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => {
+                                      window
+                                        .open(
+                                          handleSource(
+                                            dataStudent.asset?.extension ?? "",
+                                            dataStudent.asset?.url ?? ""
+                                          ),
+                                          "_blank"
+                                        )
+                                        ?.focus();
+                                    }}
+                                  >
+                                    <Visibility fontSize={"small"} />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() => {
+                                      if (assignmentRef.current) {
+                                        setFileKey(dataStudent._key);
+                                        assignmentRef.current.click();
+                                      }
+                                    }}
+                                  >
+                                    <Edit fontSize={"small"} />
+                                  </IconButton>
+                                  <IconButton
+                                    size="small"
+                                    color="primary"
+                                    onClick={() =>
+                                      handleDeleteAnswer(dataStudent._key)
+                                    }
+                                  >
+                                    <Delete fontSize="small" />
+                                  </IconButton>
+                                </Stack>
+                              </Stack>
+                            </Stack>
+                          </Box>
+
+                          {/* <Button
+                      variant="contained"
+                      sx={{ maxHeight: "2.5em" }}
+                      onClick={() => {
+                        if (assignmentRef.current) assignmentRef.current.click();
                       }}
                     >
-                      <Typography
-                        variant="body2"
-                        fontWeight={700}
-                        textTransform={"uppercase"}
-                      >
-                        {detailData?.grades?.studentfile?.asset?.extension}
-                      </Typography>
-                    </Box>
-                    <Stack p={1}>
-                      <Typography variant="caption">
-                        {fileNameEllipsis(
-                          detailData?.grades?.studentfile?.asset
-                            ?.originalFilename ?? ""
-                        )}
-                      </Typography>
-                      <Stack
-                        direction={"row"}
-                        alignItems={"center"}
-                        justifyContent={"space-between"}
-                      >
-                        <Typography variant="caption">
-                          {formatBytes(
-                            detailData?.grades?.studentfile?.asset?.size
-                          )}
-                        </Typography>
-                        <Stack direction={"row"} alignItems={"center"}>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => {
-                              window
-                                .open(
-                                  handleSource(
-                                    detailData?.grades?.studentfile?.asset
-                                      ?.extension ?? "",
-                                    detailData?.grades?.studentfile?.asset
-                                      ?.url ?? ""
-                                  ),
-                                  "_blank"
-                                )
-                                ?.focus();
-                            }}
-                          >
-                            <Visibility fontSize={"small"} />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={() => {
-                              if (assignmentRef.current) {
-                                assignmentRef.current.click();
-                              }
-                            }}
-                          >
-                            <Edit fontSize={"small"} />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            color="primary"
-                            onClick={handleDeleteAnswer}
-                          >
-                            <Delete fontSize="small" />
-                          </IconButton>
+                      Edit Tugas
+                    </Button> */}
                         </Stack>
-                      </Stack>
-                    </Stack>
-                  </Box>
-
-                  {/* <Button
-                    variant="contained"
-                    sx={{ maxHeight: "2.5em" }}
-                    onClick={() => {
-                      if (assignmentRef.current) assignmentRef.current.click();
-                    }}
-                  >
-                    Edit Tugas
-                  </Button> */}
+                      );
+                    }
+                  )}
+                  {detailData?.grades?.studentfile?.length === 1 ? (
+                    <Button
+                      variant="contained"
+                      sx={{ maxHeight: "2.5em" }}
+                      onClick={() => {
+                        if (assignmentRef.current)
+                          assignmentRef.current.click();
+                      }}
+                    >
+                      Tambah Jawaban
+                    </Button>
+                  ) : null}
                 </Stack>
               )}
               <input
                 ref={assignmentRef}
                 type="file"
                 hidden
-                multiple
+                multiple={
+                  detailData?.grades?.studentfile?.length === 0 ? true : false
+                }
                 onChange={handleSubmitAssignment}
               />
             </Stack>
