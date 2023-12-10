@@ -1,11 +1,10 @@
+import { Box, CircularProgress, Stack, Typography } from "@mui/material";
+import Cookies from "js-cookie";
 import { createContext, useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import Cookies from "js-cookie";
-import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import DashboardBar from "../components/dashboard-page/DashboardBar";
 import AppFooter from "../components/landing-page/AppFooter";
 import UserType from "../types/user.types";
-import deleteUnusedAssets from "../lib/sanity-delete-unused-assets";
 
 const INITIAL_SESSION_VALUE: UserType = {
   _id: "",

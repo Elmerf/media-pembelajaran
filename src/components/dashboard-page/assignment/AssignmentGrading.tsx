@@ -1,3 +1,4 @@
+import { ReportProblem } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -13,9 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import handleSource from "../../../helpers/source-handler";
-import { ReportProblem } from "@mui/icons-material";
 
-import type { InputBaseProps } from "@mui/material";
 import { client } from "../../../lib/sanity-client";
 
 type AssignmentGrading = {

@@ -14,6 +14,7 @@ import "react-pdf/dist/esm/Page/TextLayer.css";
 import { DashboardContext } from "../../../layouts/DashboardLayout";
 import { client } from "../../../lib/sanity-client";
 import "./Sample.css";
+import useUserLogger from "../../../hooks/useUserLogger";
 
 const PedomanPage: React.FC = () => {
   const {
@@ -21,6 +22,8 @@ const PedomanPage: React.FC = () => {
     showLoader,
     setLoaderMsg,
   } = useContext(DashboardContext);
+
+  const { logUser } = useUserLogger();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [pedoman, setPedoman] = useState<any>();
@@ -72,7 +75,7 @@ const PedomanPage: React.FC = () => {
   };
 
   useEffect(() => {
-    if (pedoman === undefined) {
+    if (pedoman === undefined && !loading) {
       setLoading(true);
       showLoader(true);
       setLoaderMsg("Loading Pedoman...");
@@ -86,7 +89,6 @@ const PedomanPage: React.FC = () => {
           `
         )
         .then((data) => {
-          // console.log(data);
           setPedoman(data);
         })
         .catch((err) => console.log(err))
@@ -95,7 +97,11 @@ const PedomanPage: React.FC = () => {
           showLoader(false);
         });
     }
-  }, [setLoaderMsg, showLoader, pedoman]);
+  }, [loading, pedoman, setLoaderMsg, showLoader]);
+
+  useEffect(() => {
+    if (pedoman) logUser("Membuka Pedoman");
+  }, [logUser, pedoman]);
 
   return (
     <Box px={4}>

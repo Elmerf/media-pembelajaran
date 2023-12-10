@@ -1,25 +1,26 @@
 import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
-import { Outlet, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import LandingLayout from "./layouts/LandingLayout";
 
 import "@fontsource/nunito/300.css";
-import "@fontsource/nunito/400.css";
 import "@fontsource/nunito/500.css";
+import "@fontsource/nunito/400.css";
 import "@fontsource/nunito/700.css";
 
 // import "@fontsource/pt-sans/300.css";
 import "@fontsource/pt-sans/400.css";
 // import "@fontsource/pt-sans/500.css";
 import "@fontsource/pt-sans/700.css";
-import AuthLayout from "./layouts/AuthLayout";
-import DashboardLayout from "./layouts/DashboardLayout";
 import DashboardContent from "./components/dashboard-page/DashboardContent";
-import ModuleList from "./components/dashboard-page/modules/ModuleList";
-import SilabusPage from "./components/dashboard-page/silabus/SilabusPage";
+import AssignmentDetail from "./components/dashboard-page/assignment/AssignmentDetail";
 import AssignmentList from "./components/dashboard-page/assignment/AssignmentList";
 import ModuleDetail from "./components/dashboard-page/modules/ModuleDetail";
-import AssignmentDetail from "./components/dashboard-page/assignment/AssignmentDetail";
+import ModuleList from "./components/dashboard-page/modules/ModuleList";
 import PedomanPage from "./components/dashboard-page/pedoman/PedomanPage";
+import SilabusPage from "./components/dashboard-page/silabus/SilabusPage";
+import StudentActivitiesPage from "./components/dashboard-page/student-activities/StudentActivitiesPage";
+import AuthLayout from "./layouts/AuthLayout";
+import DashboardLayout from "./layouts/DashboardLayout";
 
 const theme = createTheme({
   palette: {
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
       {
         path: "pedoman",
         element: <PedomanPage />,
+      },
+      {
+        path: "student-activities",
+        element: <StudentActivitiesPage />,
       },
     ],
   },

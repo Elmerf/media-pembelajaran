@@ -29,6 +29,7 @@ import fileNameEllipsis from "../../../helpers/filename-ellipsis";
 import { converToImg } from "../../../lib/sanity-img";
 import ModuleFormModal from "./ModuleFormModal";
 import SwiperComponent from "../commons/SwiperComponent";
+import useUserLogger from "../../../hooks/useUserLogger";
 
 const ModuleDetail: React.FC = () => {
   const params = useParams();
@@ -39,6 +40,8 @@ const ModuleDetail: React.FC = () => {
     showLoader,
     setLoaderMsg,
   } = useContext(DashboardContext);
+
+  const { logUser } = useUserLogger();
 
   const downloadRef = useRef<HTMLAnchorElement>(null);
 
@@ -86,13 +89,14 @@ const ModuleDetail: React.FC = () => {
         { _id: id }
       );
 
+      logUser(`Membuka Modul - ${data.title}`);
       setDetailData(data);
     } catch (e) {
       console.log(e);
     } finally {
       showLoader(false);
     }
-  }, [params.id, setLoaderMsg, showLoader]);
+  }, [logUser, params.id, setLoaderMsg, showLoader]);
 
   useEffect(() => {
     if (!detailData) {

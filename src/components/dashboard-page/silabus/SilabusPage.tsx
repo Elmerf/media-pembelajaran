@@ -11,6 +11,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
+import useUserLogger from "../../../hooks/useUserLogger";
 import { DashboardContext } from "../../../layouts/DashboardLayout";
 import { client } from "../../../lib/sanity-client";
 import "./Sample.css";
@@ -21,6 +22,8 @@ const SilabusPage: React.FC = () => {
     showLoader,
     setLoaderMsg,
   } = useContext(DashboardContext);
+
+  const { logUser } = useUserLogger();
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [silabus, setSilabus] = useState<any>();
@@ -82,6 +85,10 @@ const SilabusPage: React.FC = () => {
         });
     }
   }, [setLoaderMsg, showLoader, silabus]);
+
+  useEffect(() => {
+    if (silabus) logUser("Membuka Silabus");
+  }, [logUser, silabus]);
 
   return (
     <Box px={4}>

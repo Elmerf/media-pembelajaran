@@ -27,6 +27,7 @@ import handleSource from "../../../helpers/source-handler";
 import AssignmentFormModal from "./AssignmentFormModal";
 import SwiperComponent from "../commons/SwiperComponent";
 import AssignmentGrading from "./AssignmentGrading";
+import useUserLogger from "../../../hooks/useUserLogger";
 
 const AssignmentDetail: React.FC = () => {
   const params = useParams();
@@ -37,6 +38,8 @@ const AssignmentDetail: React.FC = () => {
     showLoader,
     setLoaderMsg,
   } = useContext(DashboardContext);
+
+  const { logUser } = useUserLogger();
 
   const downloadRef = useRef<HTMLAnchorElement>(null);
   const assignmentRef = useRef<HTMLInputElement>(null);
@@ -109,25 +112,6 @@ const AssignmentDetail: React.FC = () => {
           console.log("PATCHED", dataPatch);
         }
       }
-
-      // if (data && !detailData?.grades?.studentfile?.asset?._updatedAt) {
-      //   const documentRes = await client.assets.upload("file", data);
-
-      //   const dataPatch = await client
-      //     .patch(detailData._id)
-      //     .append("grades", [
-      //       {
-      //         student: { _type: "reference", _ref: _id },
-      //         studentfile: {
-      //           _type: "file",
-      //           asset: { _type: "reference", _ref: documentRes._id },
-      //         },
-      //       },
-      //     ])
-      //     .commit({ autoGenerateArrayKeys: true });
-
-      //   console.log(dataPatch);
-      // }
       setFileKey("");
       showLoader(false);
       location.reload();
@@ -216,6 +200,7 @@ const AssignmentDetail: React.FC = () => {
           { _id: id, student_id: _id }
         );
 
+        logUser(`Membuka Assignment - ${data.title}`);
         setDetailData(data);
       }
     } catch (e) {
@@ -223,7 +208,7 @@ const AssignmentDetail: React.FC = () => {
     } finally {
       showLoader(false);
     }
-  }, [_id, is_admin, params.id, setLoaderMsg, showLoader]);
+  }, [_id, is_admin, logUser, params.id, setLoaderMsg, showLoader]);
 
   useEffect(() => {
     if (!detailData) {

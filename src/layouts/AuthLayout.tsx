@@ -1,9 +1,9 @@
 import { useLocation } from "react-router-dom";
 import { Container } from "@mui/material";
 import LoginComponent from "../components/auth-page/LoginComponent";
+import bgImage from "../assets/hero-main.jpg";
 import ForgotComponent from "../components/auth-page/ForgotComponent";
 import RegisterComponent from "../components/auth-page/RegisterComponent";
-import bgImage from "../assets/hero-main.jpg";
 
 const AuthLayout: React.FC = () => {
   const location = useLocation();

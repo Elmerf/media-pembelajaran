@@ -13,11 +13,19 @@ import {
   Typography,
 } from "@mui/material";
 import { Menu as MenuIcon } from "@mui/icons-material";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import Cookies from "js-cookie";
+import { DashboardContext } from "../../layouts/DashboardLayout";
+import useUserLogger from "../../hooks/useUserLogger";
 
 const DashboardBar: React.FC = () => {
   const navigate = useNavigate();
+
+  const {
+    session: { is_admin },
+  } = useContext(DashboardContext);
+
+  const { logUser } = useUserLogger();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
@@ -28,6 +36,11 @@ const DashboardBar: React.FC = () => {
   const handleClose = () => setAnchorEl(null);
 
   const handleLogout = () => {
+    const sessiion = Cookies.get("current-session");
+    if (sessiion) {
+      const { _id, is_admin } = JSON.parse(sessiion);
+      logUser("Logout Aplikasi", _id, is_admin);
+    }
     Cookies.remove("current-session");
     navigate("/");
   };
@@ -113,6 +126,16 @@ const DashboardBar: React.FC = () => {
               >
                 Assignment
               </Link>
+              {is_admin && (
+                <Link
+                  underline="none"
+                  color={(theme) => theme.palette.secondary.main}
+                  component={RouteLink}
+                  to={"student-activities"}
+                >
+                  Aktivitas Siswa
+                </Link>
+              )}
               <Button
                 variant="contained"
                 size="small"
@@ -155,6 +178,11 @@ const DashboardBar: React.FC = () => {
                 onClose={handleClose}
               >
                 <MenuItem sx={{ minHeight: 36 }} onClick={handleClose}>
+                  <Link underline="none" component={RouteLink} to={"pedoman"}>
+                    Pedoman
+                  </Link>
+                </MenuItem>
+                <MenuItem sx={{ minHeight: 36 }} onClick={handleClose}>
                   <Link underline="none" component={RouteLink} to={"silabus"}>
                     Silabus
                   </Link>
@@ -173,7 +201,17 @@ const DashboardBar: React.FC = () => {
                     Assignment
                   </Link>
                 </MenuItem>
-
+                {is_admin && (
+                  <MenuItem sx={{ minHeight: 36 }} onClick={handleClose}>
+                    <Link
+                      underline="none"
+                      component={RouteLink}
+                      to={"student-activities"}
+                    >
+                      Aktivitas Siswa
+                    </Link>
+                  </MenuItem>
+                )}
                 <MenuItem sx={{ minHeight: 36, px: 1 }} disableGutters>
                   <Button
                     fullWidth
