@@ -89,20 +89,23 @@ const ModuleDetail: React.FC = () => {
         { _id: id }
       );
 
-      logUser(`Membuka Modul - ${data.title}`);
       setDetailData(data);
     } catch (e) {
       console.log(e);
     } finally {
       showLoader(false);
     }
-  }, [logUser, params.id, setLoaderMsg, showLoader]);
+  }, [params.id, setLoaderMsg, showLoader]);
 
   useEffect(() => {
     if (!detailData) {
       fetchDetail();
     }
   }, [detailData, fetchDetail, params.id, setLoaderMsg, showLoader]);
+
+  useEffect(() => {
+    if (detailData) logUser(`Membuka Modul - ${detailData.title}`);
+  }, [detailData, logUser]);
 
   return detailData ? (
     <Box px={4} pb={2}>

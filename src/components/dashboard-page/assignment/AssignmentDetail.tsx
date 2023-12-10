@@ -200,7 +200,6 @@ const AssignmentDetail: React.FC = () => {
           { _id: id, student_id: _id }
         );
 
-        logUser(`Membuka Assignment - ${data.title}`);
         setDetailData(data);
       }
     } catch (e) {
@@ -208,7 +207,7 @@ const AssignmentDetail: React.FC = () => {
     } finally {
       showLoader(false);
     }
-  }, [_id, is_admin, logUser, params.id, setLoaderMsg, showLoader]);
+  }, [_id, is_admin, params.id, setLoaderMsg, showLoader]);
 
   useEffect(() => {
     if (!detailData) {
@@ -223,6 +222,10 @@ const AssignmentDetail: React.FC = () => {
     setLoaderMsg,
     showLoader,
   ]);
+
+  useEffect(() => {
+    if (detailData) logUser(`Membuka Assignment - ${detailData.title}`);
+  }, [detailData, logUser]);
 
   return detailData ? (
     <Box px={4} pb={2}>
