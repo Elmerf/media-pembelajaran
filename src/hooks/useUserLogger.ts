@@ -34,7 +34,6 @@ const useUserLogger = () => {
       if (taskType === "endTask") return;
 
       if (taskType === "module" || taskType === "assignment") {
-        // don't add of the task ref is already exist
         const isTaskExist = todayActivity?.[taskType]?.some(
           (task: any) => task._ref === taskId
         );
@@ -65,7 +64,6 @@ const useUserLogger = () => {
 
     if (todayActivity) {
       if (taskType === "endTask") {
-        // update the date_end of today activity
         await client
           .patch(userId)
           .set({
@@ -76,7 +74,11 @@ const useUserLogger = () => {
       }
 
       if (taskType === "module" || taskType === "assignment") {
-        console.log("ADD MODULE OR ASSIGNMENT");
+        const isTaskExist = todayActivity?.[taskType]?.some(
+          (task: any) => task._ref === taskId
+        );
+
+        if (isTaskExist) return;
 
         await client
           .patch(userId)
