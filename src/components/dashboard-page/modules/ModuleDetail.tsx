@@ -104,7 +104,7 @@ const ModuleDetail: React.FC = () => {
   }, [detailData, fetchDetail, params.id, setLoaderMsg, showLoader]);
 
   useEffect(() => {
-    if (detailData) logUser(`Membuka Modul - ${detailData.title}`);
+    if (detailData) logUser({ taskId: detailData._id, taskType: "module" });
   }, [detailData, logUser]);
 
   return detailData ? (
@@ -252,7 +252,7 @@ const ModuleDetail: React.FC = () => {
         dataToEdit={detailData}
         open={openForm}
         onClose={() => {
-          location.reload();
+          window.location.reload();
           setOpenForm(false);
         }}
       />

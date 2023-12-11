@@ -1,10 +1,11 @@
 import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import Cookies from "js-cookie";
 import { createContext, useEffect, useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import DashboardBar from "../components/dashboard-page/DashboardBar";
 import AppFooter from "../components/landing-page/AppFooter";
 import UserType from "../types/user.types";
+import useUserLogger from "../hooks/useUserLogger";
 
 const INITIAL_SESSION_VALUE: UserType = {
   _id: "",
@@ -33,6 +34,10 @@ export const DashboardContext = createContext<DashboardContext>({
 
 const DashboardLayout: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { logUser } = useUserLogger();
+
   const [session, setSession] = useState<UserType>(INITIAL_SESSION_VALUE);
 
   const [showLoader, setShowLoader] = useState(false);
@@ -61,6 +66,15 @@ const DashboardLayout: React.FC = () => {
   useEffect(() => {
     // deleteUnusedAssets();
   }, []);
+
+  useEffect(() => {
+    if (
+      !location.pathname.includes("module") &&
+      !location.pathname.includes("assignment")
+    ) {
+      logUser({ taskType: "endTask" });
+    }
+  }, [location, logUser]);
 
   return (
     <DashboardContext.Provider

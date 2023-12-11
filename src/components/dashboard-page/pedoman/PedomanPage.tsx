@@ -99,10 +99,6 @@ const PedomanPage: React.FC = () => {
     }
   }, [loading, pedoman, setLoaderMsg, showLoader]);
 
-  useEffect(() => {
-    if (pedoman) logUser("Membuka Pedoman");
-  }, [logUser, pedoman]);
-
   return (
     <Box px={4}>
       <Container disableGutters maxWidth="lg">

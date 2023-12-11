@@ -12,14 +12,11 @@ import { compare } from "bcrypt-ts/browser";
 import Cookies from "js-cookie";
 import { useEffect, useState } from "react";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-import useUserLogger from "../../hooks/useUserLogger";
 import { client } from "../../lib/sanity-client";
 import type UserType from "../../types/user.types";
 
 const LoginComponent: React.FC = () => {
   const navigate = useNavigate();
-
-  const { logUser } = useUserLogger();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -57,18 +54,14 @@ const LoginComponent: React.FC = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password: _, ...savedValue } = data[0];
     Cookies.set("current-session", JSON.stringify(savedValue));
-    logUser("Login Aplikasi", savedValue._id, savedValue.is_admin);
     navigate("/dashboard");
   };
 
   useEffect(() => {
     if (Cookies.get("current-session")) {
-      const session = Cookies.get("current-session");
-      const parsedSession = JSON.parse(session ?? "{}");
-      logUser("Login Aplikasi", parsedSession._id, parsedSession.is_admin);
       navigate("/dashboard", { replace: true });
     }
-  }, [logUser, navigate]);
+  }, [navigate]);
 
   return (
     <Box

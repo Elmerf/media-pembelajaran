@@ -224,7 +224,7 @@ const AssignmentDetail: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (detailData) logUser(`Membuka Assignment - ${detailData.title}`);
+    if (detailData) logUser({ taskId: detailData._id, taskType: "assignment" });
   }, [detailData, logUser]);
 
   return detailData ? (

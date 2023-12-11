@@ -86,10 +86,6 @@ const SilabusPage: React.FC = () => {
     }
   }, [setLoaderMsg, showLoader, silabus]);
 
-  useEffect(() => {
-    if (silabus) logUser("Membuka Silabus");
-  }, [logUser, silabus]);
-
   return (
     <Box px={4}>
       <Container disableGutters maxWidth="lg">
