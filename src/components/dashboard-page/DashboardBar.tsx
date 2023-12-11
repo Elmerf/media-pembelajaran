@@ -1,4 +1,4 @@
-import { useLocation, useNavigate, Link as RouteLink } from "react-router-dom";
+import { Menu as MenuIcon } from "@mui/icons-material";
 import {
   AppBar,
   Box,
@@ -12,11 +12,10 @@ import {
   Toolbar,
   Typography,
 } from "@mui/material";
-import { Menu as MenuIcon } from "@mui/icons-material";
-import { useContext, useState } from "react";
 import Cookies from "js-cookie";
+import { useContext, useState } from "react";
+import { Link as RouteLink, useNavigate } from "react-router-dom";
 import { DashboardContext } from "../../layouts/DashboardLayout";
-import useUserLogger from "../../hooks/useUserLogger";
 
 const DashboardBar: React.FC = () => {
   const navigate = useNavigate();
@@ -24,8 +23,6 @@ const DashboardBar: React.FC = () => {
   const {
     session: { is_admin },
   } = useContext(DashboardContext);
-
-  const { logUser } = useUserLogger();
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const open = Boolean(anchorEl);
@@ -36,11 +33,6 @@ const DashboardBar: React.FC = () => {
   const handleClose = () => setAnchorEl(null);
 
   const handleLogout = () => {
-    const sessiion = Cookies.get("current-session");
-    if (sessiion) {
-      const { _id, is_admin } = JSON.parse(sessiion);
-      logUser("Logout Aplikasi", _id, is_admin);
-    }
     Cookies.remove("current-session");
     navigate("/");
   };
