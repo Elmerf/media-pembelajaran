@@ -213,19 +213,12 @@ const AssignmentDetail: React.FC = () => {
     if (!detailData) {
       fetchDetail();
     }
-  }, [
-    _id,
-    detailData,
-    fetchDetail,
-    is_admin,
-    params.id,
-    setLoaderMsg,
-    showLoader,
-  ]);
+  }, [_id, detailData, fetchDetail]);
 
   useEffect(() => {
-    if (detailData) logUser({ taskId: detailData._id, taskType: "assignment" });
-  }, [detailData, logUser]);
+    if (params.id) logUser({ taskId: params.id, taskType: "assignment" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   return detailData ? (
     <Box px={4} pb={2}>

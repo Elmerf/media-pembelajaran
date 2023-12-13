@@ -101,11 +101,12 @@ const ModuleDetail: React.FC = () => {
     if (!detailData) {
       fetchDetail();
     }
-  }, [detailData, fetchDetail, params.id, setLoaderMsg, showLoader]);
+  }, [detailData, fetchDetail]);
 
   useEffect(() => {
-    if (detailData) logUser({ taskId: detailData._id, taskType: "module" });
-  }, [detailData, logUser]);
+    if (params.id) logUser({ taskId: params.id, taskType: "module" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.id]);
 
   return detailData ? (
     <Box px={4} pb={2}>
